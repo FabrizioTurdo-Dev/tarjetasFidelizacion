@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Escanear · Café Lunar</title>
+<title>Escanear</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
 <link rel="stylesheet" href="estilos.css">
 <style>
@@ -20,28 +20,38 @@
 </style>
 </head><body><main class="screen">
 <div class="proto"><span>Prototipo · pantalla 3 de 4</span><a href="./">Todas las pantallas</a></div>
-<div class="top"><div class="biz"><div class="logo" style="width:36px;height:36px;font-size:15px;border-radius:9px">CL</div><strong>Café Lunar</strong></div><span class="emp">Empleado: Juan</span></div>
+<div class="top"><div class="biz"><div class="logo" id="logo" style="width:36px;height:36px;font-size:15px;border-radius:9px"></div><strong id="nom"></strong></div><span class="emp" id="emp"></span></div>
 <div class="cam" aria-label="Cámara"><div class="frame"></div><p>Apuntá al QR de la tarjeta del cliente</p></div>
 <div id="out" aria-live="polite"></div>
 <div class="box"><h2>Simular un escaneo</h2><p class="small muted">En la versión real esto pasa al leer el QR. Probá cada caso:</p>
   <div class="sim">
     <button data-c="ok"><b>Lucía #0042</b>Visita normal</button>
     <button data-c="wait"><b>Martín #0017</b>Vino hace 2 horas</button>
-    <button data-c="prize"><b>Sofía #0008</b>Llegó a 10 visitas</button>
+    <button data-c="prize"><b>Sofía #0008</b><span id="sim-prize"></span></button>
     <button data-c="reset"><b>Carla #0031</b>No venía hace 74 días</button>
   </div>
 </div>
 </main>
+<script src="datos.js"></script>
 <script>
+const N=H.actual(); H.aplicarMarca(N);
+const P=H.premios(N), p0=P[0], p1=P[1], emp=(N.empleados&&N.empleados[0])||"Empleado", esp=N.espera||6, ven=N.vence||60;
+document.title="Escanear · "+N.nombre;
+document.getElementById("logo").textContent=H.iniciales(N.nombre);
+document.getElementById("nom").textContent=N.nombre;
+document.getElementById("emp").textContent="Empleado: "+emp;
+document.getElementById("sim-prize").textContent=p0?`Llega a ${p0.visitas} visitas`:"Sin premios cargados";
 const out=document.getElementById("out");
 const hhmm=h=>{const d=new Date(Date.now()+h*36e5);return d.toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"})};
+const faltan=(v)=>{const s=H.siguiente(N,v);return s?`Le ${s.visitas-v===1?"falta 1":"faltan "+(s.visitas-v)} para: ${H.esc(s.nombre)}.`:"Ya llegó al premio máximo."};
+const v0=p0?p0.visitas:10;
 const C={
-  ok:()=>`<div class="result r-good"><span class="who">Lucía · socio #0042</span><h2>Visita sumada: 8 de 10</h2><p>Le faltan 2 para el café con medialuna.</p></div>`,
-  wait:()=>`<div class="result r-warn"><span class="who">Martín · socio #0017</span><h2>Ya sumó una visita hace 2 horas</h2><p>Puede sumar otra desde las ${hhmm(4)} (espera de 6 horas). No se sumó nada.</p></div>`,
-  prize:()=>`<div class="result r-prize"><span class="who">Sofía · socio #0008</span><h2>¡Tiene un premio!</h2><p>10 de 10 visitas: café con medialuna.</p><button class="btn" onclick="this.parentElement.outerHTML=C.done()">Canjear premio</button><button class="btn ghost" onclick="this.parentElement.outerHTML=C.ok8()">Sumar visita sin canjear</button></div>`,
-  done:()=>`<div class="result r-good"><span class="who">Sofía · socio #0008</span><h2>Premio canjeado</h2><p>Su tarjeta volvió a 0 de 10. Quedó registrado que lo canjeó Juan.</p></div>`,
-  ok8:()=>`<div class="result r-good"><span class="who">Sofía · socio #0008</span><h2>Visita sumada: 11</h2><p>Guarda el premio para la próxima.</p></div>`,
-  reset:()=>`<div class="result r-warn"><span class="who">Carla · socio #0031</span><h2>Visita sumada: 1 de 10</h2><p>Pasaron 74 días sin visitas (más de 60), así que el contador volvió a empezar. Esta visita ya cuenta.</p></div>`
+  ok:()=>`<div class="result r-good"><span class="who">Lucía · socio #0042</span><h2>Visita sumada: 8</h2><p>${faltan(8)}</p></div>`,
+  wait:()=>`<div class="result r-warn"><span class="who">Martín · socio #0017</span><h2>Ya sumó una visita hace 2 horas</h2><p>Puede sumar otra desde las ${hhmm(esp-2)} (espera de ${esp} horas). No se sumó nada.</p></div>`,
+  prize:()=>p0?`<div class="result r-prize"><span class="who">Sofía · socio #0008</span><h2>¡Tiene un premio!</h2><p>Llegó a ${v0} visitas: <b>${H.esc(p0.nombre)}</b>.</p><button class="btn" onclick="this.parentElement.outerHTML=C.done()">Entregar premio</button><button class="btn ghost" onclick="this.parentElement.outerHTML=C.later()">Ahora no</button></div>`:`<div class="result r-good"><span class="who">Sofía · socio #0008</span><h2>Visita sumada: ${v0}</h2><p>Este negocio todavía no cargó premios.</p></div>`,
+  done:()=>`<div class="result r-good"><span class="who">Sofía · socio #0008</span><h2>Premio entregado</h2><p>Sus visitas <b>siguen en ${v0}</b>: canjear no las descuenta. ${faltan(v0)} Quedó registrado que lo entregó ${H.esc(emp)}.</p></div>`,
+  later:()=>`<div class="result r-good"><span class="who">Sofía · socio #0008</span><h2>Visita sumada: ${v0}</h2><p>El premio queda disponible en su tarjeta para cuando lo quiera canjear.</p></div>`,
+  reset:()=>`<div class="result r-warn"><span class="who">Carla · socio #0031</span><h2>Visita sumada: 1</h2><p>Pasaron 74 días sin visitas (más de ${ven}), así que el contador volvió a empezar. Esta visita ya cuenta.</p></div>`
 };
 document.querySelectorAll(".sim button").forEach(b=>b.onclick=()=>{out.innerHTML=C[b.dataset.c]();out.scrollIntoView({behavior:"smooth",block:"nearest"})});
 </script>

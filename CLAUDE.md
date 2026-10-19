@@ -15,7 +15,8 @@ El cliente final la tiene en el celular sin descargar apps; el negocio la admini
 ## Decisiones tomadas (19/10/2026)
 | Tema | Decisión |
 | --- | --- |
-| Programa | Solo por visitas (sellos). Puntos por monto: versión 2 |
+| Programa | Solo por visitas. Puntos por monto: versión 2 |
+| Premios | Escalera por negocio (ej. 10 visitas: café, 20: torta, 100: cena). Visitas acumuladas: canjear NO las descuenta; cada premio se canjea una vez. Los carga el superadmin (el dueño los edita en v2/v3). Visitas como moneda: con puntos, v2 |
 | Período de espera entre visitas | 6 horas (configurable por negocio) |
 | Vencimiento | Por inactividad: si pasan 60 días sin visitas, el contador se reinicia y la visita nueva cuenta como 1. Cada visita reinicia el plazo de 60 días |
 | Aviso de vencimiento | La tarjeta muestra cuándo vencen las visitas; recordatorio 7 días antes |
@@ -33,7 +34,7 @@ El cliente final la tiene en el celular sin descargar apps; el negocio la admini
 3. Sumar visita: solo un usuario logueado del negocio escanea el QR del cliente. Se respeta el período de espera. Todo queda auditado (quién, cuándo).
 4. Canje de premio: el empleado escanea y canjea; se descuentan visitas y queda registrado.
 5. Panel del negocio (PWA): roles dueño / empleado. Lista de clientes, última visita, dormidos (+30 días), top 10, visitas por día, canjes, cumpleaños del mes.
-6. Panel superadmin: alta manual de negocios, estado (prueba / activa / vencida / suspendida), días de prueba restantes.
+6. Panel superadmin (solo Fabri): alta manual de negocios y edición de su tarjeta (nombre, color, premios, espera, vencimiento, empleados), estado (prueba / activa / vencida / suspendida), días de prueba restantes. Es prioridad: sin esto cada cambio requiere tocar código.
 
 ## Reglas de seguridad (no negociables)
 - RLS activado en todas las tablas; cada negocio ve solo sus datos.
@@ -52,7 +53,7 @@ El cliente final la tiene en el celular sin descargar apps; el negocio la admini
 - `index.html`: tablero de avance y control de comercios. Lee `data/tareas.json` y `data/comercios.json`.
   - Para actualizarlo se editan esos JSON. Estados de tareas: Pendiente, En curso, Hecho. Estados de comercios: Contactado, Interesado, Faltan datos, Datos recibidos, Habilitado, Pagando, Descartado. `inicio` en formato AAAA-MM-DD; la prueba dura 30 días.
   - El repo es público: en `data/comercios.json` NO van teléfonos, mails ni datos personales. Eso va en `privado/contactos.md` (en .gitignore).
-- `prototipo/`: pantallas estáticas con datos de ejemplo ("Café Lunar"): alta, tarjeta (con tutorial de iPhone), escanear, panel del dueño. Estilos compartidos en `prototipo/estilos.css`; `--marca` es el color del comercio.
+- `prototipo/`: pantallas estáticas con datos de ejemplo ("Café Lunar" y "Café Marte"): alta, tarjeta (con tutorial de iPhone), escanear, panel del dueño y `admin.html` (superadmin). Los datos comunes están en `prototipo/datos.js` (se guardan en localStorage del navegador; `?n=<id>` elige el negocio). Estilos compartidos en `prototipo/estilos.css`; `--marca` es el color del comercio.
 - GitHub Pages solo sirve archivos estáticos. La app real (Next.js + Supabase) se publicará en otro lado (por ejemplo, Vercel); Pages queda para el tablero y el prototipo.
 
 ## Git

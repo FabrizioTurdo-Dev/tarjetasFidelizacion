@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Panel · Café Lunar</title>
+<title>Panel del dueño</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
 <link rel="stylesheet" href="estilos.css">
 <style>
@@ -23,8 +23,8 @@ td.num{font-family:var(--data);font-variant-numeric:tabular-nums}
 </style>
 </head><body><main class="screen wide">
 <div class="proto"><span>Prototipo · pantalla 4 de 4 · datos de ejemplo</span><a href="./">Todas las pantallas</a></div>
-<div class="biz"><div class="logo">CL</div><div><h1>Café Lunar</h1><p class="muted small">Panel del dueño</p></div></div>
-<div class="trial">Prueba gratis: te quedan <b>18 días</b> (hasta el 06/11/2026).</div>
+<div class="biz"><div class="logo" id="logo"></div><div><h1 id="nom"></h1><p class="muted small">Panel del dueño</p></div></div>
+<div class="trial" id="trial"></div>
 <section class="kpis">
   <div class="kpi"><span>Socios</span><b>143</b></div>
   <div class="kpi"><span>Visitas esta semana</span><b>87</b></div>
@@ -34,14 +34,8 @@ td.num{font-family:var(--data);font-variant-numeric:tabular-nums}
 <div class="grid">
   <section class="box"><h2>Clientes</h2><div class="tablebox"><table>
     <thead><tr><th>Socio</th><th>Nombre</th><th>Visitas</th><th>Última visita</th><th></th></tr></thead>
-    <tbody>
-      <tr><td class="num">#0042</td><td>Lucía Gómez</td><td class="num">7/10</td><td class="num">hoy</td><td><span class="chip c-good">Activa</span></td></tr>
-      <tr><td class="num">#0008</td><td>Sofía Ruiz</td><td class="num">10/10</td><td class="num">ayer</td><td><span class="chip c-good">Premio listo</span></td></tr>
-      <tr><td class="num">#0017</td><td>Martín Pérez</td><td class="num">4/10</td><td class="num">hace 3 días</td><td><span class="chip c-good">Activo</span></td></tr>
-      <tr><td class="num">#0105</td><td>Diego Sosa</td><td class="num">5/10</td><td class="num">hace 41 días</td><td><span class="chip c-warn">Dormido</span></td></tr>
-      <tr><td class="num">#0063</td><td>Ana Ferreyra</td><td class="num">3/10</td><td class="num">hace 55 días</td><td><span class="chip c-bad">Vence en 5 días</span></td></tr>
-    </tbody></table></div>
-    <p class="small muted">"Dormido" = más de 30 días sin venir. A los 60 días sin visitas, su contador vuelve a empezar.</p>
+    <tbody id="clientes"></tbody></table></div>
+    <p class="small muted" id="nota-dormido"></p>
   </section>
   <div style="display:flex;flex-direction:column;gap:14px">
     <section class="box"><h2>Para ir a buscar</h2>
@@ -51,11 +45,37 @@ td.num{font-family:var(--data);font-variant-numeric:tabular-nums}
     <section class="box"><h2>Cumpleaños de octubre</h2>
       <div class="li"><span>Martín Pérez</span><span class="muted">23/10</span></div>
       <div class="li"><span>Lucía Gómez</span><span class="muted">30/10</span></div></section>
-    <section class="box"><h2>Tu tarjeta</h2><dl class="cfg">
-      <dt>Premio</dt><dd>Café con medialuna cada 10 visitas</dd>
-      <dt>Espera</dt><dd>6 horas entre visitas</dd>
-      <dt>Vencimiento</dt><dd>60 días sin visitas</dd>
-      <dt>Empleados</dt><dd>Juan, Carla</dd></dl></section>
+    <section class="box"><h2>Tu tarjeta</h2><dl class="cfg" id="cfg"></dl>
+      <p class="small muted">Si querés cambiar premios o datos de la tarjeta, avisanos y lo actualizamos.</p></section>
   </div>
 </div>
-</main></body></html>
+</main>
+<script src="datos.js"></script>
+<script>
+const N=H.actual(); H.aplicarMarca(N);
+const $=id=>document.getElementById(id), P=H.premios(N), p0=P[0];
+document.title="Panel · "+N.nombre;
+$("logo").textContent=H.iniciales(N.nombre); $("nom").textContent=N.nombre;
+const dias=H.diasPrueba(N), fin=H.finPrueba(N).toLocaleDateString("es-AR");
+$("trial").innerHTML={
+  prueba: dias>0?`Prueba gratis: te quedan <b>${dias} días</b> (hasta el ${fin}).`:`La prueba gratis terminó el ${fin}.`,
+  activa: "Suscripción <b>activa</b>.",
+  vencida: "Tu suscripción está <b>vencida</b>. Escribinos para renovarla.",
+  suspendida: "Tu cuenta está <b>suspendida</b>. Escribinos para reactivarla."
+}[N.estado]||"";
+// El prototipo trae 5 clientes de ejemplo; Sofía siempre es la que llegó al primer premio.
+const C=[["#0042","Lucía Gómez",7,"hoy"],["#0008","Sofía Ruiz",p0?p0.visitas:10,"ayer"],["#0017","Martín Pérez",4,"hace 3 días"],["#0105","Diego Sosa",5,"hace 41 días"],["#0063","Ana Ferreyra",3,"hace 55 días"]];
+const chip=(v,ult)=>{
+  if(ult==="hace 55 días")return `<span class="chip c-bad">Vence en 5 días</span>`;
+  if(ult==="hace 41 días")return `<span class="chip c-warn">Dormido</span>`;
+  if(p0&&v>=p0.visitas)return `<span class="chip c-good">Premio listo</span>`;
+  return `<span class="chip c-good">Activo</span>`};
+$("clientes").innerHTML=C.map(([s,n,v,u])=>`<tr><td class="num">${s}</td><td>${n}</td><td class="num">${v}</td><td class="num">${u}</td><td>${chip(v,u)}</td></tr>`).join("");
+$("nota-dormido").textContent=`"Dormido" = más de 30 días sin venir. A los ${N.vence||60} días sin visitas, su contador vuelve a empezar.`;
+$("cfg").innerHTML=
+  (P.length?P.map((p,i)=>`<dt>${i?"":"Premios"}</dt><dd>${H.esc(p.nombre)} <span class="muted">· a las ${p.visitas} visitas</span></dd>`).join(""):`<dt>Premios</dt><dd>Sin cargar</dd>`)+
+  `<dt>Espera</dt><dd>${N.espera||6} horas entre visitas</dd>
+   <dt>Vencimiento</dt><dd>${N.vence||60} días sin visitas</dd>
+   <dt>Empleados</dt><dd>${(N.empleados||[]).map(H.esc).join(", ")||"—"}</dd>`;
+</script>
+</body></html>

@@ -28,6 +28,7 @@ Argumento de venta: *"Sabé quiénes son tus clientes y hacelos volver, sin que 
 | --- | --- |
 | Nombre | Entre Habitué y De la Casa |
 | Período de espera entre visitas | 6 horas |
+| Premios | Escalera de premios por negocio (ej. 10 visitas: café, 20: torta, 100: cena). Las visitas son acumuladas: canjear NO las descuenta. Cada premio se canjea una vez. Los carga el superadmin; el dueño los edita en la versión 2 o 3. Visitas como moneda (canjear descuenta): con puntos, versión 2 |
 | Vencimiento | Por inactividad: si pasan 60 días sin visitas, el contador se reinicia y la visita nueva cuenta como 1. Cada visita reinicia el plazo |
 | Aviso de vencimiento | La tarjeta muestra cuándo vencen; recordatorio 7 días antes |
 | Alta de negocios | Manual |
@@ -54,8 +55,8 @@ El empleado escanea la tarjeta del cliente, nunca al revés.
 4. Suma la visita y la tarjeta se actualiza, o muestra "Ya registrada".
 
 **Canjear un premio**
-1. Al llegar a la meta, la tarjeta muestra "¡Tenés un premio!".
-2. El empleado escanea y toca "Canjear"; se descuentan las visitas y queda registrado.
+1. Al llegar a las visitas de un premio, la tarjeta muestra "¡Ya lo ganaste!".
+2. El empleado escanea y toca "Entregar premio"; queda registrado quién y cuándo. Las visitas no se descuentan: el contador sigue hacia el próximo premio.
 
 **Anti-trampa**
 - Solo usuarios logueados del negocio suman o canjean.
@@ -75,7 +76,7 @@ El empleado escanea la tarjeta del cliente, nunca al revés.
 | --- | --- | --- |
 | Empleado | Celular del mostrador (PWA) | Escanear, sumar visita, canjear |
 | Dueño | Compu o celular | Lo del empleado + configurar tarjeta, ver clientes y métricas, gestionar empleados |
-| Superadmin | Compu | Alta manual de negocios, estado de pago, días de prueba, suspender/reactivar |
+| Superadmin | Compu | Alta manual de negocios, editar su tarjeta (nombre, color, premios, espera, vencimiento, empleados), estado de pago, días de prueba, suspender/reactivar |
 
 Qué ve el dueño: lista de clientes (nombre, socio, visitas, última visita, alta), dormidos (+30 días), top 10, visitas por día, canjes, cumpleaños del mes.
 

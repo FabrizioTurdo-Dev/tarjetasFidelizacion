@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin Habitué</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="estilos.css">
+<style>
+.layout{display:grid;grid-template-columns:260px 1fr 320px;gap:14px;align-items:start}
+@media (max-width:980px){.layout{grid-template-columns:1fr}}
+.neg{display:flex;flex-direction:column;gap:2px;text-align:left;width:100%;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;cursor:pointer;font:inherit;color:inherit}
+.neg[aria-current="true"]{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+.neg .row{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.prem{display:grid;grid-template-columns:90px 1fr auto;gap:8px;align-items:end}
+.prem label{font-size:12px;color:var(--muted)}
+.x{border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:10px;padding:10px 12px;cursor:pointer;font:inherit}
+input[type=color]{padding:3px;height:44px;width:100%}
+.btn.sm{width:auto;display:inline-block;padding:10px 14px;font-size:14px}
+.links{display:flex;flex-wrap:wrap;gap:8px}
+.links a{font-size:13px;font-weight:600;color:var(--ink);border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;text-decoration:none}
+.aviso{background:var(--warn-soft);color:var(--warn);border-radius:12px;padding:10px 14px;font-size:13px}
+.ok{background:var(--good-soft);color:var(--good);border-radius:12px;padding:10px 14px;font-size:14px;font-weight:500}
+.prev{position:sticky;top:16px}
+/* mini tarjeta de vista previa */
+.mini{background:var(--marca);color:var(--marca-ink);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.mini .logo{background:var(--marca-ink);color:var(--marca);width:40px;height:40px;font-size:17px}
+.mini .count{font:700 30px/1 var(--display)} .mini .count small{font-size:14px;font-weight:600;opacity:.8}
+.mini .bar{height:8px;border-radius:999px;background:color-mix(in srgb,var(--marca-ink) 25%,transparent);overflow:hidden}
+.mini .bar i{display:block;height:100%;width:60%;background:var(--marca-ink);border-radius:999px}
+.mini .pl{background:color-mix(in srgb,var(--marca-ink) 12%,transparent);border-radius:10px;padding:8px 10px;font-size:13px;display:flex;flex-direction:column;gap:4px}
+.mini .pl div{display:flex;justify-content:space-between;gap:8px}
+</style>
+</head><body><main class="screen wide">
+<div class="proto"><span>Prototipo · admin de Habitué (solo vos)</span><a href="./">Todas las pantallas</a></div>
+<h1>Negocios</h1>
+<div class="aviso">En este prototipo los cambios se guardan <b>solo en este navegador</b>: sirven para ver cómo funciona. En la app real se guardan en la base de datos y las ven todos los dispositivos. Acá no hay login; en la real el acceso es solo tuyo, con 2FA.</div>
+
+<div class="layout">
+  <section style="display:flex;flex-direction:column;gap:8px">
+    <div id="lista" style="display:flex;flex-direction:column;gap:8px"></div>
+    <button class="btn dark" type="button" id="nuevo">+ Nuevo negocio</button>
+    <button class="btn ghost" type="button" id="reset">Restaurar ejemplos</button>
+  </section>
+
+  <section class="box" id="editor" aria-label="Editar negocio">
+    <h2 id="ed-t"></h2>
+    <div class="links" id="links"></div>
+    <label>Nombre del negocio<input data-k="nombre" required></label>
+    <div class="row2">
+      <label>Rubro<input data-k="rubro" placeholder="Restaurante, peluquería…"></label>
+      <label>Color de la tarjeta<input type="color" data-k="color"></label>
+    </div>
+    <div class="row2">
+      <label>Estado<select data-k="estado"><option value="prueba">En prueba</option><option value="activa">Activa</option><option value="vencida">Vencida</option><option value="suspendida">Suspendida</option></select></label>
+      <label>Inicio de la prueba<input type="date" data-k="inicio"></label>
+    </div>
+    <div class="row2">
+      <label>Espera entre visitas (horas)<input type="number" min="0" max="72" data-k="espera"></label>
+      <label>Vencimiento (días sin visitas)<input type="number" min="7" max="365" data-k="vence"></label>
+    </div>
+    <label>Empleados (separados por coma)<input data-k="empleados" placeholder="Juan, Carla"></label>
+    <div>
+      <h2 style="margin-bottom:8px">Premios</h2>
+      <p class="small muted" style="margin-bottom:8px">Las visitas son acumuladas: canjear un premio no las descuenta.</p>
+      <div id="premios" style="display:flex;flex-direction:column;gap:8px"></div>
+      <button class="btn ghost sm" type="button" id="add-p" style="margin-top:8px">+ Agregar premio</button>
+    </div>
+    <div id="msg" aria-live="polite"></div>
+    <button class="btn" type="button" id="guardar">Guardar cambios</button>
+  </section>
+
+  <aside class="prev"><div class="box"><h2>Así se ve la tarjeta</h2><div class="mini" id="mini"></div><p class="small muted">Vista previa con 7 visitas.</p></div></aside>
+</div>
+</main>
+<script src="datos.js"></script>
+<script>
+let lista=H.leer(), sel=lista[0].id, sucio=false;
+const $=id=>document.getElementById(id), cur=()=>lista.find(x=>x.id===sel);
+const ESTADO={prueba:["c-warn","En prueba"],activa:["c-good","Activa"],vencida:["c-bad","Vencida"],suspendida:["c-bad","Suspendida"]};
+
+function renderLista(){
+  $("lista").innerHTML=lista.map(n=>{
+    const e=ESTADO[n.estado]||ESTADO.prueba, d=H.diasPrueba(n);
+    const sub=n.estado==="prueba"?(d>0?`${d} días de prueba`:"Prueba terminada"):n.rubro||"";
+    return `<button class="neg" data-id="${H.esc(n.id)}" aria-current="${n.id===sel}"><span class="row"><strong>${H.esc(n.nombre||"(sin nombre)")}</strong><span class="chip ${e[0]}">${e[1]}</span></span><span class="muted small">${H.esc(sub)}</span></button>`}).join("");
+  $("lista").querySelectorAll(".neg").forEach(b=>b.onclick=()=>{sel=b.dataset.id;$("msg").innerHTML="";renderTodo()});
+}
+function renderPremios(){
+  const n=cur();
+  $("premios").innerHTML=(n.premios||[]).map((p,i)=>`<div class="prem"><label>Visitas<input type="number" min="1" value="${p.visitas}" data-pi="${i}" data-pk="visitas"></label><label>Premio<input value="${H.esc(p.nombre)}" data-pi="${i}" data-pk="nombre" placeholder="Café con medialuna"></label><button class="x" type="button" data-del="${i}" aria-label="Quitar premio">✕</button></div>`).join("")||`<p class="muted small">Sin premios todavía.</p>`;
+  $("premios").querySelectorAll("input").forEach(el=>el.oninput=()=>{const p=n.premios[el.dataset.pi];p.visitas=el.dataset.pk==="visitas"?(parseInt(el.value,10)||0):el.value;cambio()});
+  $("premios").querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{n.premios.splice(+b.dataset.del,1);renderPremios();cambio()});
+}
+function renderForm(){
+  const n=cur();
+  $("ed-t").textContent=n.nombre||"Nuevo negocio";
+  document.querySelectorAll("[data-k]").forEach(el=>{const k=el.dataset.k;el.value=k==="empleados"?(n.empleados||[]).join(", "):(n[k]==null?"":n[k])});
+  const q="?n="+encodeURIComponent(n.id);
+  $("links").innerHTML=[["Alta (QR)","alta.html"],["Tarjeta","tarjeta.html"],["Escanear","escanear.html"],["Panel del dueño","panel.html"]].map(([t,u])=>`<a href="${u}${q}" target="_blank" rel="noopener">${t} ↗</a>`).join("");
+  renderPremios();
+}
+function renderMini(){
+  const n=cur(), P=H.premios(n), v=7, s=H.siguiente(n,v);
+  H.aplicarMarca(n,$("mini"));
+  $("mini").innerHTML=`<div class="biz"><div class="logo">${H.esc(H.iniciales(n.nombre))}</div><strong>${H.esc(n.nombre||"Tu negocio")}</strong></div>
+   <div><div class="count">${v} <small>visitas</small></div><p class="small" style="opacity:.85;margin-top:4px">${s?`Te faltan ${s.visitas-v} para: ${H.esc(s.nombre)}`:(P.length?"Premio máximo alcanzado":"Sin premios cargados")}</p></div>
+   <div class="bar"><i></i></div>
+   <div class="pl">${P.map(p=>`<div><span>${H.esc(p.nombre)}</span><span>${p.visitas}${v>=p.visitas?" ✓":""}</span></div>`).join("")||"<span>—</span>"}</div>`;
+}
+function renderTodo(){renderLista();renderForm();renderMini()}
+function cambio(){sucio=true;$("msg").innerHTML="";renderMini();$("ed-t").textContent=cur().nombre||"Nuevo negocio";renderLista()}
+
+document.querySelectorAll("[data-k]").forEach(el=>{el.oninput=el.onchange=()=>{
+  const n=cur(),k=el.dataset.k;
+  n[k]=k==="empleados"?el.value.split(",").map(x=>x.trim()).filter(Boolean):(el.type==="number"?(parseInt(el.value,10)||0):el.value);
+  cambio()}});
+$("add-p").onclick=()=>{const n=cur();const u=Math.max(0,...(n.premios||[]).map(p=>p.visitas));(n.premios=n.premios||[]).push({visitas:u+10,nombre:""});renderPremios();cambio()};
+$("nuevo").onclick=()=>{const id="n"+Date.now().toString(36);lista.push({id,nombre:"Nuevo negocio",rubro:"",color:"#2f5d50",espera:6,vence:60,estado:"prueba",inicio:new Date().toISOString().slice(0,10),empleados:[],premios:[{visitas:10,nombre:""}]});sel=id;sucio=true;renderTodo();document.querySelector('[data-k="nombre"]').select()};
+$("guardar").onclick=()=>{
+  const n=cur();
+  if(!(n.nombre||"").trim()){$("msg").innerHTML=`<div class="aviso">Falta el nombre del negocio.</div>`;return}
+  const vacios=(n.premios||[]).some(p=>!p.nombre.trim()||p.visitas<1);
+  if(vacios){$("msg").innerHTML=`<div class="aviso">Completá el nombre y las visitas de cada premio, o quitá los que sobran.</div>`;return}
+  lista.forEach(x=>x.premios=(x.premios||[]).slice().sort((a,b)=>a.visitas-b.visitas));
+  const ok=H.guardar(lista); sucio=false; renderTodo();
+  $("msg").innerHTML=ok?`<div class="ok">Guardado. Abrí la tarjeta, el escaneo o el panel con los botones de arriba para ver los cambios.</div>`:`<div class="aviso">Este navegador no dejó guardar (modo privado o bloqueado).</div>`;
+};
+$("reset").onclick=()=>{if(confirm("Esto borra los cambios hechos en este navegador y vuelve a los negocios de ejemplo. ¿Seguir?")){H.restaurar();lista=H.leer();sel=lista[0].id;sucio=false;$("msg").innerHTML="";renderTodo()}};
+window.addEventListener("beforeunload",e=>{if(sucio){e.preventDefault();e.returnValue=""}});
+renderTodo();
+</script>
+</body></html>

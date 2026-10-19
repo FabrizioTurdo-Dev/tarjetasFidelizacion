@@ -50,7 +50,8 @@ El cliente final la tiene en el celular sin descargar apps; el negocio la admini
 
 ## Estructura actual y GitHub Pages
 - Repo: https://github.com/FabrizioTurdo-Dev/tarjetasFidelizacion — publicado con GitHub Pages (rama main, carpeta raíz).
-- `index.html`: tablero de avance y control de comercios. Lee `data/tareas.json` y `data/comercios.json`.
+- `index.html` (raíz): redirige al prototipo, para poder pasarle el link a un comercio sin mostrar el tablero interno.
+- `tablero/index.html`: tablero de avance y control de comercios (uso interno, en `/tablero/`). Lee `../data/tareas.json` y `../data/comercios.json`.
   - Para actualizarlo se editan esos JSON. Estados de tareas: Pendiente, En curso, Hecho. Estados de comercios: Contactado, Interesado, Faltan datos, Datos recibidos, Habilitado, Pagando, Descartado. `inicio` en formato AAAA-MM-DD; la prueba dura 30 días.
   - El repo es público: en `data/comercios.json` NO van teléfonos, mails ni datos personales. Eso va en `privado/contactos.md` (en .gitignore).
 - `prototipo/`: pantallas estáticas con datos de ejemplo ("Café Lunar" y "Café Marte"): alta, tarjeta (con tutorial de iPhone), escanear, panel del dueño y `admin.html` (superadmin). Los datos comunes están en `prototipo/datos.js` (se guardan en localStorage del navegador; `?n=<id>` elige el negocio). Estilos compartidos en `prototipo/estilos.css`; `--marca` es el color del comercio.

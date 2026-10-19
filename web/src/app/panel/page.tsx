@@ -3,9 +3,9 @@ import { useEffect, useState } from "react";
 import { RequireAuth } from "@/components/Auth";
 import { sb } from "@/lib/supabase";
 import { negociosDelUsuario } from "@/lib/negocios";
-import { socio, type Negocio } from "@/lib/util";
+import { BASE, socio, type Negocio } from "@/lib/util";
 
-type Cli = { id: string; numero_socio: number; nombre: string; telefono: string | null; email: string | null; cumple: string | null; visitas: number; ultima_visita: string | null; created_at: string };
+type Cli = { token: string; id: string; numero_socio: number; nombre: string; telefono: string | null; email: string | null; cumple: string | null; visitas: number; ultima_visita: string | null; created_at: string };
 const DIA = 864e5;
 
 // Vista demo (/panel/?demo=1): un negocio de ejemplo con actividad, sin login ni base de datos.
@@ -15,7 +15,7 @@ function datosDemo() {
   const clientes: Cli[] = nombres.map((nombre, i) => {
     const dias = i < 17 ? Math.floor((i * 7) % 28) : 35 + i * 3; // los últimos quedan "dormidos"
     return {
-      id: "c" + i, numero_socio: i + 1, nombre,
+      id: "c" + i, token: "demo", numero_socio: i + 1, nombre,
       telefono: "11 5" + String(1000000 + i * 37911).slice(0, 7), email: null,
       cumple: i % 6 === 0 ? `1990-${String(mes + 1).padStart(2, "0")}-${String(3 + i).padStart(2, "0")}` : null,
       visitas: Math.max(1, 23 - i), ultima_visita: new Date(Date.now() - dias * DIA).toISOString(),
@@ -35,6 +35,7 @@ function Panel({ uid, demo = false }: { uid: string; demo?: boolean }) {
   const [canjes, setCanjes] = useState(0);
   const [cargando, setCargando] = useState(false);
   const [cargoNegocios, setCargoNegocios] = useState(false);
+  const [copiado, setCopiado] = useState("");
 
   useEffect(() => {
     if (demo) { const d = datosDemo(); setNegocios([d.negocio]); setNegId("demo"); setClientes(d.clientes); setVisitas(d.visitas); setCanjes(d.canjes); setCargoNegocios(true); return; }
@@ -47,7 +48,7 @@ function Panel({ uid, demo = false }: { uid: string; demo?: boolean }) {
     setCargando(true);
     const desde = new Date(Date.now() - 14 * DIA).toISOString();
     Promise.all([
-      sb.from("clientes").select("id,numero_socio,nombre,telefono,email,cumple,visitas,ultima_visita,created_at").eq("negocio_id", negId).order("numero_socio").limit(5000),
+      sb.from("clientes").select("token,id,numero_socio,nombre,telefono,email,cumple,visitas,ultima_visita,created_at").eq("negocio_id", negId).order("numero_socio").limit(5000),
       sb.from("visitas").select("created_at").eq("negocio_id", negId).gte("created_at", desde).limit(5000),
       sb.from("canjes").select("id", { count: "exact", head: true }).eq("negocio_id", negId),
     ]).then(([c, v, k]) => {
@@ -57,6 +58,17 @@ function Panel({ uid, demo = false }: { uid: string; demo?: boolean }) {
   }, [negId, demo]);
 
   const neg = negocios.find((n) => n.id === negId);
+
+  // Comparte el link de la tarjeta (hoja de compartir del celular) o, si no hay, lo copia.
+  async function reenviar(c: Cli) {
+    const url = `${location.origin}${BASE}/t/?k=${c.token}`;
+    const texto = `Hola ${c.nombre}, esta es tu tarjeta de ${neg?.nombre}. Guardala en tu celular: ${url}`;
+    try {
+      if (navigator.share) { await navigator.share({ text: texto }); return; }
+      await navigator.clipboard.writeText(texto);
+      setCopiado(c.id); setTimeout(() => setCopiado(""), 2000);
+    } catch { /* el usuario canceló */ }
+  }
   const ahora = Date.now();
   const venceMs = (neg?.vence_dias ?? 60) * DIA;
   // El contador solo vale mientras la tarjeta no esté vencida.
@@ -105,8 +117,10 @@ function Panel({ uid, demo = false }: { uid: string; demo?: boolean }) {
       </section>
 
       <section className="box"><h2>Todos los clientes</h2>
-        <div style={{ overflowX: "auto" }}><table><thead><tr><th>Socio</th><th>Nombre</th><th>Contacto</th><th>Visitas</th><th>Última visita</th></tr></thead>
-          <tbody>{clientes.map((c) => <tr key={c.id}><td>{socio(c.numero_socio)}</td><td>{c.nombre}</td><td>{c.telefono || c.email}</td><td>{vigentes(c)}</td><td>{fecha(c.ultima_visita)}</td></tr>)}</tbody></table></div>
+        <div style={{ overflowX: "auto" }}><table><thead><tr><th>Socio</th><th>Nombre</th><th>Contacto</th><th>Visitas</th><th>Última visita</th><th>Tarjeta</th></tr></thead>
+          <tbody>{clientes.map((c) => <tr key={c.id}><td>{socio(c.numero_socio)}</td><td>{c.nombre}</td><td>{c.telefono || c.email}</td><td>{vigentes(c)}</td><td>{fecha(c.ultima_visita)}</td>
+            <td><button className="x" style={{ padding: "4px 10px", whiteSpace: "nowrap" }} onClick={() => reenviar(c)}>{copiado === c.id ? "¡Copiado!" : "Reenviar link"}</button></td></tr>)}</tbody></table></div>
+        <p className="small muted">Si un cliente perdió su tarjeta, tocá "Reenviar link" y mandáselo por WhatsApp: con ese link recupera sus visitas.</p>
       </section>
     </>
   );

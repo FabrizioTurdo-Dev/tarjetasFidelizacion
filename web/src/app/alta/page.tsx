@@ -2,7 +2,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { sb } from "@/lib/supabase";
-import { iniciales, marca, msg } from "@/lib/util";
+import { BASE, iniciales, marca, msg } from "@/lib/util";
 
 type Pub = { nombre: string; color: string; operativo: boolean };
 
@@ -50,7 +50,7 @@ function Alta() {
         <label>Teléfono o mail<input required maxLength={120} autoComplete="tel" value={contacto} onChange={(e) => setContacto(e.target.value)} /></label>
         <label>Cumpleaños (opcional)<input type="date" value={cumple} onChange={(e) => setCumple(e.target.value)} /></label>
         <label className="check"><input type="checkbox" checked={acepta} onChange={(e) => setAcepta(e.target.checked)} />
-          <span>Acepto que {neg?.nombre || "el negocio"} guarde mis datos para manejar mi tarjeta y avisarme de premios. Puedo pedir que los borren cuando quiera.</span></label>
+          <span>Acepto que {neg?.nombre || "el negocio"} guarde mis datos para manejar mi tarjeta y avisarme de premios. Puedo pedir que los borren cuando quiera. <a href={`${BASE}/privacidad/`} target="_blank" rel="noopener">Leer la política de privacidad</a>.</span></label>
         {err && <div className="errmsg">{err}</div>}
         <button className="btn" disabled={ocupado || !acepta}>Crear mi tarjeta</button>
       </form>

@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Escanear · Café Lunar</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="estilos.css">
+<style>
+.cam{aspect-ratio:1;max-width:100%;border-radius:18px;background:#1b1918;position:relative;display:grid;place-items:center;overflow:hidden}
+.cam .frame{width:62%;aspect-ratio:1;border-radius:16px;box-shadow:0 0 0 999px rgba(0,0,0,.45);position:relative}
+.cam .frame::before,.cam .frame::after{content:"";position:absolute;inset:0;border:3px solid #fff;border-radius:16px;clip-path:polygon(0 0,25% 0,25% 6%,6% 6%,6% 25%,0 25%,0 75%,6% 75%,6% 94%,25% 94%,25% 100%,75% 100%,75% 94%,94% 94%,94% 75%,100% 75%,100% 25%,94% 25%,94% 6%,75% 6%,75% 0,100% 0,100% 100%,0 100%)}
+.cam p{position:absolute;bottom:14px;left:0;right:0;text-align:center;color:#fff;font-size:14px}
+.sim{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sim button{font:500 13px var(--body);text-align:left;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:10px;cursor:pointer}
+.sim button b{display:block;font-size:14px}
+.result{border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:10px}
+.r-good{background:var(--good-soft);color:var(--good)} .r-warn{background:var(--warn-soft);color:var(--warn)} .r-prize{background:var(--marca-soft);color:var(--ink)}
+.result h2{font-size:22px}
+.result .who{font:500 13px var(--data);opacity:.85}
+.top{display:flex;justify-content:space-between;align-items:center}
+.emp{font-size:13px;color:var(--muted)}
+</style>
+</head><body><main class="screen">
+<div class="proto"><span>Prototipo · pantalla 3 de 4</span><a href="./">Todas las pantallas</a></div>
+<div class="top"><div class="biz"><div class="logo" style="width:36px;height:36px;font-size:15px;border-radius:9px">CL</div><strong>Café Lunar</strong></div><span class="emp">Empleado: Juan</span></div>
+<div class="cam" aria-label="Cámara"><div class="frame"></div><p>Apuntá al QR de la tarjeta del cliente</p></div>
+<div id="out" aria-live="polite"></div>
+<div class="box"><h2>Simular un escaneo</h2><p class="small muted">En la versión real esto pasa al leer el QR. Probá cada caso:</p>
+  <div class="sim">
+    <button data-c="ok"><b>Lucía #0042</b>Visita normal</button>
+    <button data-c="wait"><b>Martín #0017</b>Vino hace 2 horas</button>
+    <button data-c="prize"><b>Sofía #0008</b>Llegó a 10 visitas</button>
+    <button data-c="reset"><b>Carla #0031</b>No venía hace 74 días</button>
+  </div>
+</div>
+</main>
+<script>
+const out=document.getElementById("out");
+const hhmm=h=>{const d=new Date(Date.now()+h*36e5);return d.toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"})};
+const C={
+  ok:()=>`<div class="result r-good"><span class="who">Lucía · socio #0042</span><h2>Visita sumada: 8 de 10</h2><p>Le faltan 2 para el café con medialuna.</p></div>`,
+  wait:()=>`<div class="result r-warn"><span class="who">Martín · socio #0017</span><h2>Ya sumó una visita hace 2 horas</h2><p>Puede sumar otra desde las ${hhmm(4)} (espera de 6 horas). No se sumó nada.</p></div>`,
+  prize:()=>`<div class="result r-prize"><span class="who">Sofía · socio #0008</span><h2>¡Tiene un premio!</h2><p>10 de 10 visitas: café con medialuna.</p><button class="btn" onclick="this.parentElement.outerHTML=C.done()">Canjear premio</button><button class="btn ghost" onclick="this.parentElement.outerHTML=C.ok8()">Sumar visita sin canjear</button></div>`,
+  done:()=>`<div class="result r-good"><span class="who">Sofía · socio #0008</span><h2>Premio canjeado</h2><p>Su tarjeta volvió a 0 de 10. Quedó registrado que lo canjeó Juan.</p></div>`,
+  ok8:()=>`<div class="result r-good"><span class="who">Sofía · socio #0008</span><h2>Visita sumada: 11</h2><p>Guarda el premio para la próxima.</p></div>`,
+  reset:()=>`<div class="result r-warn"><span class="who">Carla · socio #0031</span><h2>Visita sumada: 1 de 10</h2><p>Pasaron 74 días sin visitas (más de 60), así que el contador volvió a empezar. Esta visita ya cuenta.</p></div>`
+};
+document.querySelectorAll(".sim button").forEach(b=>b.onclick=()=>{out.innerHTML=C[b.dataset.c]();out.scrollIntoView({behavior:"smooth",block:"nearest"})});
+</script>
+</body></html>

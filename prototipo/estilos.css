@@ -1,0 +1,39 @@
+/* Prototipo: pantallas de celular. --marca es el color del comercio (lo elige cada negocio). */
+:root{
+  --marca:#7a3e2b; --marca-ink:#fff7f2; --marca-soft:#f4e7e1;
+  --bg:#f2f1ef; --surface:#fff; --ink:#1c1a19; --muted:#6b6560; --line:#e0dcd8;
+  --good:#1f7a3f; --good-soft:#e2f2e7; --warn:#a15c00; --warn-soft:#fbefd9; --bad:#b3261e; --bad-soft:#fbe4e2;
+  --display:"Bricolage Grotesque",system-ui,sans-serif; --body:"IBM Plex Sans",system-ui,sans-serif; --data:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root{
+  --marca-soft:#3a2620; --bg:#141211; --surface:#1e1b1a; --ink:#efe9e5; --muted:#a59d97; --line:#34302d;
+  --good:#6fd08f; --good-soft:#163222; --warn:#f0b35a; --warn-soft:#3a2a10; --bad:#f2867e; --bad-soft:#3d1a18; color-scheme:dark}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--body)}
+.screen{max-width:440px;margin:0 auto;padding:20px 16px 48px;display:flex;flex-direction:column;gap:18px}
+.wide{max-width:1000px}
+h1{font:700 26px/1.15 var(--display);margin:0;text-wrap:balance}
+h2{font:600 18px var(--display);margin:0}
+p{margin:0}
+.muted{color:var(--muted)} .small{font-size:13px}
+.proto{font-size:12px;color:var(--muted);display:flex;justify-content:space-between;gap:8px;border-bottom:1px dashed var(--line);padding-bottom:10px}
+.proto a{color:var(--muted)}
+.biz{display:flex;align-items:center;gap:12px}
+.logo{width:48px;height:48px;border-radius:12px;background:var(--marca);color:var(--marca-ink);display:grid;place-items:center;font:700 20px var(--display);flex:none}
+.box{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px}
+label{display:flex;flex-direction:column;gap:5px;font-size:14px;font-weight:500}
+input,select{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:11px 12px}
+.check{flex-direction:row;align-items:flex-start;gap:10px;font-weight:400;font-size:14px}
+.check input{margin-top:3px}
+.btn{display:block;width:100%;text-align:center;text-decoration:none;border:0;border-radius:12px;padding:14px;font:600 16px var(--body);cursor:pointer;background:var(--marca);color:var(--marca-ink)}
+.btn.dark{background:var(--ink);color:var(--bg)}
+.btn.ghost{background:none;color:var(--ink);border:1px solid var(--line)}
+:focus-visible{outline:2px solid var(--marca);outline-offset:2px}
+.chip{display:inline-block;font-size:12.5px;font-weight:600;border-radius:999px;padding:2px 10px}
+.c-good{background:var(--good-soft);color:var(--good)} .c-warn{background:var(--warn-soft);color:var(--warn)} .c-bad{background:var(--bad-soft);color:var(--bad)} .c-neutral{background:var(--bg);color:var(--muted)}
+.stamps{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.stamp{aspect-ratio:1;border-radius:50%;border:2px dashed currentColor;opacity:.55;display:grid;place-items:center;font:600 13px var(--data)}
+.stamp.on{border-style:solid;opacity:1;background:currentColor}
+.stamp.on::after{content:"✓";color:var(--marca);font-size:18px}
+.stamp.prize{border-style:solid;opacity:1}

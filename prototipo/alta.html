@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sumate a Café Lunar</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="estilos.css">
+</head><body><main class="screen">
+<div class="proto"><span>Prototipo · pantalla 1 de 4</span><a href="./">Todas las pantallas</a></div>
+<div class="biz"><div class="logo">CL</div><div><strong>Café Lunar</strong><p class="muted small">Tarjeta de cliente frecuente</p></div></div>
+<h1>Cada 10 visitas, un café con medialuna de regalo</h1>
+<p class="muted">Registrate en 30 segundos. Tu tarjeta queda en el celular, sin descargar ninguna app.</p>
+<form class="box" id="f">
+  <label>Nombre<input id="nombre" autocomplete="given-name" placeholder="Lucía" required></label>
+  <label>WhatsApp o mail<input id="contacto" autocomplete="tel" placeholder="11 5555-1234" required></label>
+  <label>Cumpleaños (opcional)<input id="cumple" type="date"></label>
+  <label class="check"><input type="checkbox" id="ok" required><span>Acepto la <u>política de privacidad</u>. Mis datos solo los ve Café Lunar.</span></label>
+  <button class="btn" type="submit">Crear mi tarjeta</button>
+</form>
+<p class="muted small" style="text-align:center">Funciona con Habitué</p>
+</main>
+<script>document.getElementById("f").addEventListener("submit",e=>{e.preventDefault();location.href="tarjeta.html?nueva=1&nombre="+encodeURIComponent(document.getElementById("nombre").value.trim())})</script>
+</body></html>

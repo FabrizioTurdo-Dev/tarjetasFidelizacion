@@ -54,3 +54,7 @@ El cliente final la tiene en el celular sin descargar apps; el negocio la admini
   - El repo es público: en `data/comercios.json` NO van teléfonos, mails ni datos personales. Eso va en `privado/contactos.md` (en .gitignore).
 - `prototipo/`: pantallas estáticas con datos de ejemplo ("Café Lunar"): alta, tarjeta (con tutorial de iPhone), escanear, panel del dueño. Estilos compartidos en `prototipo/estilos.css`; `--marca` es el color del comercio.
 - GitHub Pages solo sirve archivos estáticos. La app real (Next.js + Supabase) se publicará en otro lado (por ejemplo, Vercel); Pages queda para el tablero y el prototipo.
+
+## Git
+- Hacer commit y push solo cuando Fabri lo pida o lo autorice.
+- Remoto: origin → https://github.com/FabrizioTurdo-Dev/tarjetasFidelizacion.git, rama main.

@@ -4,6 +4,8 @@ import { useSearchParams } from "next/navigation";
 import { sb } from "@/lib/supabase";
 import { BASE, iniciales, marca, msg, socio, type EstadoCliente } from "@/lib/util";
 import { Qr } from "@/components/Qr";
+import { agregarToken, tokensGuardados } from "@/lib/tarjetas";
+import Link from "next/link";
 
 function Tarjeta() {
   const q = useSearchParams();
@@ -13,6 +15,7 @@ function Tarjeta() {
   const [err, setErr] = useState("");
   const [tuto, setTuto] = useState(false);
   const [ios, setIos] = useState(false);
+  const [cantidad, setCantidad] = useState(0);
 
   useEffect(() => {
     const esIos = /iP(hone|ad|od)/.test(navigator.userAgent);
@@ -35,7 +38,10 @@ function Tarjeta() {
     }
     if (!k) return;
     sb.rpc("tarjeta_por_token", { p_token: k }).then(({ data, error }) => {
-      if (error) setErr(msg(error)); else setC(data as EstadoCliente);
+      if (error) { setErr(msg(error)); return; }
+      agregarToken(k); // queda en "Mis tarjetas" de este dispositivo
+      setCantidad(tokensGuardados().length);
+      setC(data as EstadoCliente);
     });
   }, [k, q]);
 
@@ -52,6 +58,7 @@ function Tarjeta() {
 
   return (
     <main className="screen" style={marca(c.negocio.color)}>
+      {cantidad > 1 && <Link href="/mis-tarjetas/" className="btn ghost">Ver mis {cantidad} tarjetas</Link>}
       {nueva && <div className="welcome">¡Listo, ya sos socio! Mostrá esta tarjeta en la caja para sumar tu primera visita.</div>}
       <section className="card" aria-label="Tarjeta de cliente">
         <div className="card-top">
@@ -86,7 +93,7 @@ function Tarjeta() {
           </div>)) : <p className="muted small">Este negocio todavía no cargó premios.</p>}</div>
         <p className="small muted">Tus visitas siguen sumando cuando canjeás un premio. Para canjear, mostrá la tarjeta en la caja.</p>
       </section>
-      <p className="muted small" style={{ textAlign: "center" }}>Funciona con Habitué</p>
+      <p className="muted small" style={{ textAlign: "center" }}>Funciona con Habitué · <Link href="/mis-tarjetas/">Mis tarjetas</Link></p>
 
       {tuto && (
         <div className="sheet" role="dialog" aria-labelledby="tuto-t">

@@ -13,6 +13,23 @@ const ESTADO: Record<string, [string, string]> = {
 type PremioEd = { id?: string; visitas: number; nombre: string };
 type Miembro = { user_id: string; email: string; rol: "dueno" | "empleado" };
 
+/** Contraseña para pasarle al negocio: 10 caracteres sin los que se confunden (0/O, 1/l/I). */
+function generarClave() {
+  const letras = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  return Array.from(crypto.getRandomValues(new Uint32Array(10)), (n) => letras[n % letras.length]).join("");
+}
+
+/** Función "usuarios" de Supabase (crear usuario / cambiar contraseña). Devuelve el error ya traducido, o null. */
+async function funcionUsuarios(body: Record<string, unknown>): Promise<string | null> {
+  const { error } = await sb.functions.invoke("usuarios", { body });
+  if (!error) return null;
+  try {
+    const j = await (error as { context?: Response }).context?.json();
+    if (j?.error) return msg(j.error);
+  } catch { /* la respuesta no traía detalle */ }
+  return msg(error);
+}
+
 // Vista demo (/admin/?demo=1): datos de ejemplo, sin login ni base de datos. No guarda nada.
 const hoy = (d: number) => new Date(Date.now() + d * 864e5).toISOString().slice(0, 10);
 const DEMO_NEGOCIOS: Negocio[] = [
@@ -43,6 +60,12 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
   const [aviso, setAviso] = useState<{ ok: boolean; t: string } | null>(null);
   const [nuevoMail, setNuevoMail] = useState("");
   const [nuevoRol, setNuevoRol] = useState<"dueno" | "empleado">("empleado");
+  const [nuevaPass, setNuevaPass] = useState("");
+  const [cambiando, setCambiando] = useState<string | null>(null);
+  const [nuevaClave, setNuevaClave] = useState("");
+  const [avisoU, setAvisoU] = useState<{ ok: boolean; t: string } | null>(null);
+  const [acceso, setAcceso] = useState("");
+  const [copiado, setCopiado] = useState(false);
 
   const cargarLista = useCallback(async () => {
     const { data } = await sb.from("negocios").select("*").order("created_at");
@@ -67,6 +90,7 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
     setEd(n ? { ...n } : null);
     setAviso(null);
     setMiembros(null);
+    setAvisoU(null); setAcceso(""); setCambiando(null);
     if (!n) return;
     if (demo) { setPremios(DEMO_PREMIOS[n.id] ?? []); setMiembros(DEMO_MIEMBROS[n.id] ?? []); return; }
     sb.from("premios").select("id,visitas,nombre").eq("negocio_id", n.id).eq("activo", true).order("visitas")
@@ -118,20 +142,50 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
     setAviso({ ok: true, t: "Guardado." });
   }
 
+  // Mensaje listo para mandarle al negocio por WhatsApp con sus datos de acceso.
+  const textoAcceso = (email: string, pass: string) =>
+    `¡Hola! Ya tenés tu acceso a Habitué para ${ed?.nombre}.\nEntrá desde acá: ${location.origin}${BASE}/panel/\nMail: ${email}\nContraseña: ${pass}\nCómo se usa: ${location.origin}${BASE}/guia/`;
+
+  // Si el mail ya tiene usuario, solo se vincula. Si no, se crea con la contraseña (función "usuarios").
   async function agregar() {
     if (!ed || !nuevoMail.trim()) return;
     if (demo) return soloDemo();
-    const { error } = await sb.rpc("agregar_miembro", { p_negocio: ed.id, p_email: nuevoMail, p_rol: nuevoRol });
-    if (error) { setAviso({ ok: false, t: msg(error) }); return; }
-    setNuevoMail("");
+    setAvisoU(null); setAcceso("");
+    const email = nuevoMail.trim().toLowerCase(), pass = nuevaPass.trim();
+    const { error } = await sb.rpc("agregar_miembro", { p_negocio: ed.id, p_email: email, p_rol: nuevoRol });
+    if (error && !error.message.includes("usuario_inexistente")) { setAvisoU({ ok: false, t: msg(error) }); return; }
+    if (error) {
+      if (!pass) { setAvisoU({ ok: false, t: "Ese mail todavía no tiene usuario: escribí una contraseña (o tocá Generar) para crearlo." }); return; }
+      const e = await funcionUsuarios({ accion: "crear", negocio_id: ed.id, email, password: pass, rol: nuevoRol });
+      if (e) { setAvisoU({ ok: false, t: e }); return; }
+      setAcceso(textoAcceso(email, pass));
+      setAvisoU({ ok: true, t: "Usuario creado y vinculado al negocio." });
+    } else {
+      setAvisoU({ ok: true, t: pass ? "Ese mail ya tenía usuario: lo vinculé y sigue con su contraseña de siempre." : "Usuario vinculado al negocio." });
+    }
+    setNuevoMail(""); setNuevaPass("");
     const { data } = await sb.rpc("listar_miembros", { p_negocio: ed.id });
     setMiembros((data as Miembro[]) ?? []);
   }
-  async function quitar(u: string) {
+  async function cambiarClave(m: Miembro) {
+    if (demo) return soloDemo();
+    setAvisoU(null); setAcceso("");
+    const pass = nuevaClave.trim();
+    const e = await funcionUsuarios({ accion: "clave", user_id: m.user_id, password: pass });
+    if (e) { setAvisoU({ ok: false, t: e }); return; }
+    setCambiando(null);
+    setAcceso(textoAcceso(m.email, pass));
+    setAvisoU({ ok: true, t: `Contraseña cambiada para ${m.email}.` });
+  }
+  async function quitar(m: Miembro) {
     if (!ed) return;
     if (demo) return soloDemo();
-    await sb.rpc("quitar_miembro", { p_negocio: ed.id, p_user: u });
-    setMiembros((m) => (m ?? []).filter((x) => x.user_id !== u));
+    if (!confirm(`¿Quitar a ${m.email} de ${ed.nombre}? El usuario no se borra: solo deja de entrar a este negocio.`)) return;
+    await sb.rpc("quitar_miembro", { p_negocio: ed.id, p_user: m.user_id });
+    setMiembros((l) => (l ?? []).filter((x) => x.user_id !== m.user_id));
+  }
+  async function copiarAcceso() {
+    try { await navigator.clipboard.writeText(acceso); setCopiado(true); setTimeout(() => setCopiado(false), 2000); } catch { /* queda a la vista */ }
   }
 
   const urlAlta = ed ? `${location.origin}${BASE}/alta/?n=${ed.slug}` : "";
@@ -188,18 +242,40 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
             <button className="btn ghost sm" style={{ marginTop: 8 }} onClick={() => setPremios([...premios, { visitas: Math.max(0, ...premios.map((p) => p.visitas)) + 5, nombre: "" }])}>+ Agregar premio</button>
           </div>
 
-          <div><h2 style={{ marginBottom: 8 }}>Usuarios del negocio</h2>
+          <div><h2 style={{ marginBottom: 4 }}>Usuarios del negocio</h2>
+            <p className="small muted" style={{ marginBottom: 8 }}>Dueño: ve el panel y escanea. Empleado: solo escanea.</p>
             {miembros === null ? <p className="muted small">Cargando…</p> : (<>
               {miembros.map((m) => (
-                <div className="pr" key={m.user_id}><span>{m.email} <span className="chip c-neutral">{m.rol === "dueno" ? "Dueño" : "Empleado"}</span></span>
-                  <button className="x" onClick={() => quitar(m.user_id)}>Quitar</button></div>))}
+                <div key={m.user_id}>
+                  <div className="pr"><span style={{ wordBreak: "break-all" }}>{m.email} <span className="chip c-neutral">{m.rol === "dueno" ? "Dueño" : "Empleado"}</span></span>
+                    <span style={{ display: "flex", gap: 6 }}>
+                      <button className="x" onClick={() => { setCambiando(m.user_id); setNuevaClave(generarClave()); setAvisoU(null); }}>Contraseña</button>
+                      <button className="x" onClick={() => quitar(m)}>Quitar</button></span></div>
+                  {cambiando === m.user_id && (
+                    <div className="prem" style={{ gridTemplateColumns: "1fr auto auto", marginBottom: 8 }}>
+                      <label>Contraseña nueva<input value={nuevaClave} autoComplete="off" onChange={(e) => setNuevaClave(e.target.value)} /></label>
+                      <button className="btn dark sm" onClick={() => cambiarClave(m)}>Guardar</button>
+                      <button className="x" onClick={() => setCambiando(null)}>Cancelar</button>
+                    </div>)}
+                </div>))}
               {!miembros.length && <p className="muted small">Todavía no hay usuarios.</p>}
-              <div className="prem" style={{ gridTemplateColumns: "1fr 120px auto", marginTop: 8 }}>
-                <label>Mail del usuario<input type="email" value={nuevoMail} onChange={(e) => setNuevoMail(e.target.value)} placeholder="empleado@mail.com" /></label>
+              <div className="prem" style={{ gridTemplateColumns: "1fr 120px", marginTop: 8 }}>
+                <label>Mail del usuario<input type="email" value={nuevoMail} onChange={(e) => setNuevoMail(e.target.value)} placeholder="dueno@mail.com" /></label>
                 <label>Rol<select value={nuevoRol} onChange={(e) => setNuevoRol(e.target.value as "dueno" | "empleado")}><option value="empleado">Empleado</option><option value="dueno">Dueño</option></select></label>
+              </div>
+              <div className="prem" style={{ gridTemplateColumns: "1fr auto auto", marginTop: 8 }}>
+                <label>Contraseña (para un usuario nuevo)<input value={nuevaPass} autoComplete="off" onChange={(e) => setNuevaPass(e.target.value)} placeholder="Mínimo 8 caracteres" /></label>
+                <button className="x" onClick={() => setNuevaPass(generarClave())}>Generar</button>
                 <button className="btn dark sm" onClick={agregar}>Agregar</button>
               </div>
-              <p className="small muted" style={{ marginTop: 6 }}>El usuario tiene que existir antes en Supabase → Authentication → Users.</p>
+              <p className="small muted" style={{ marginTop: 6 }}>Si el mail ya tiene usuario (por ejemplo, el dueño de otro negocio), dejá la contraseña vacía: solo se vincula.</p>
+              {avisoU && <div className={avisoU.ok ? "okmsg" : "errmsg"} style={{ marginTop: 8 }}>{avisoU.t}</div>}
+              {acceso && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
+                  <p className="small muted">Mandale esto por WhatsApp (la contraseña no se vuelve a mostrar):</p>
+                  <p className="linkt" style={{ whiteSpace: "pre-line" }}>{acceso}</p>
+                  <button className="btn ghost sm" onClick={copiarAcceso}>{copiado ? "¡Copiado!" : "Copiar mensaje"}</button>
+                </div>)}
             </>)}
           </div>
 

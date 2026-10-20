@@ -15,7 +15,15 @@ const ERRORES: Record<string, string> = {
   visitas_insuficientes: "Todavía no llegó a las visitas de ese premio.",
   ya_canjeado: "Ese premio ya fue entregado.",
   socio_inexistente: "No hay ningún socio con ese número en este negocio.",
-  usuario_inexistente: "Ese mail no tiene usuario. Crealo primero en Supabase Auth.",
+  usuario_inexistente: "Ese mail todavía no tiene usuario.",
+  clave_corta: "La contraseña tiene que tener al menos 8 caracteres.",
+  mail_invalido: "Ese mail no parece válido.",
+  email_exists: "Ese mail ya tiene usuario.",
+  weak_password: "Esa contraseña es muy fácil de adivinar. Probá con otra (o tocá Generar).",
+  same_password: "Esa ya es la contraseña actual.",
+  reauthentication_needed: "Por seguridad, cerrá sesión, volvé a entrar y probá de nuevo.",
+  es_superadmin: "La contraseña del superadmin no se cambia desde acá.",
+  pedido_invalido: "Faltan datos para hacer eso.",
   "Invalid login credentials": "Mail o contraseña incorrectos.",
 };
 

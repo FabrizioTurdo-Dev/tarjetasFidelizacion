@@ -80,6 +80,32 @@ function Mfa({ onListo }: { onListo: () => void }) {
   );
 }
 
+/** Cualquier usuario logueado puede cambiar su propia contraseña (no hace falta la clave secreta). */
+function CambiarClave() {
+  const [abierto, setAbierto] = useState(false);
+  const [clave, setClave] = useState("");
+  const [estado, setEstado] = useState<{ ok: boolean; t: string } | null>(null);
+  async function guardar(e: React.FormEvent) {
+    e.preventDefault(); setEstado(null);
+    if (clave.length < 8) { setEstado({ ok: false, t: msg("clave_corta") }); return; }
+    const { error } = await sb.auth.updateUser({ password: clave });
+    if (error) setEstado({ ok: false, t: msg(error.code ?? error) });
+    else { setEstado({ ok: true, t: "Listo, tu contraseña cambió." }); setClave(""); }
+  }
+  if (!abierto) return <button className="btn ghost" onClick={() => setAbierto(true)}>Cambiar mi contraseña</button>;
+  return (
+    <form className="box" onSubmit={guardar}>
+      <h2>Cambiar mi contraseña</h2>
+      <label>Contraseña nueva<input type="password" autoComplete="new-password" required value={clave} onChange={(e) => setClave(e.target.value)} /></label>
+      {estado && <div className={estado.ok ? "okmsg" : "errmsg"}>{estado.t}</div>}
+      <div className="row2">
+        <button className="btn dark">Guardar</button>
+        <button type="button" className="btn ghost" onClick={() => { setAbierto(false); setEstado(null); setClave(""); }}>Cerrar</button>
+      </div>
+    </form>
+  );
+}
+
 export function RequireAuth({ mfa = false, children }: { mfa?: boolean; children: (s: Session) => ReactNode }) {
   const { session, cargando } = useSession();
   const [nivel, setNivel] = useState<string | null>(null);
@@ -97,6 +123,9 @@ export function RequireAuth({ mfa = false, children }: { mfa?: boolean; children
   }
   return (<>
     {children(session)}
-    <button className="btn ghost" style={{ marginTop: 8 }} onClick={() => sb.auth.signOut()}>Cerrar sesión</button>
+    <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
+      <CambiarClave />
+      <button className="btn ghost" onClick={() => sb.auth.signOut()}>Cerrar sesión</button>
+    </div>
   </>);
 }

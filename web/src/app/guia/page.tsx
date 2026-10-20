@@ -97,6 +97,7 @@ export default function Guia() {
           <li><b>«Ya sumó una visita hace poco».</b> Es la espera entre visitas. No se sumó nada; está todo bien.</li>
           <li><b>No abre la cámara.</b> Revisá que el navegador tenga permiso de cámara (en los ajustes del celular). Mientras tanto, escribí el número de socio.</li>
           <li><b>Quiero cambiar un premio, el color o agregar un empleado.</b> Escribinos por WhatsApp y lo cambiamos nosotros.</li>
+          <li><b>Me olvidé la contraseña.</b> Escribinos y te ponemos una nueva. Para cambiarla vos, abajo de todo en el panel tocá <b>Cambiar mi contraseña</b>.</li>
           <li><b>Se fue un empleado.</b> Avisanos y le damos de baja el usuario.</li>
           <li><b>Un cliente pide que borren sus datos.</b> Avisanos y los borramos (lo pide la ley 25.326).</li>
         </ul>

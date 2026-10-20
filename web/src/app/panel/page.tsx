@@ -1,9 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { RequireAuth } from "@/components/Auth";
+import { BotonInstalar } from "@/components/Instalar";
 import { sb } from "@/lib/supabase";
-import { negociosDelUsuario } from "@/lib/negocios";
-import { BASE, socio, type Negocio } from "@/lib/util";
+import { negociosDelUsuario, type NegocioUsuario } from "@/lib/negocios";
+import { BASE, marca, socio, type Negocio, type Premio } from "@/lib/util";
 
 type Cli = { token: string; id: string; numero_socio: number; nombre: string; telefono: string | null; email: string | null; cumple: string | null; visitas: number; ultima_visita: string | null; created_at: string };
 const DIA = 864e5;
@@ -19,18 +22,23 @@ function datosDemo() {
       telefono: "11 5" + String(1000000 + i * 37911).slice(0, 7), email: null,
       cumple: i % 6 === 0 ? `1990-${String(mes + 1).padStart(2, "0")}-${String(3 + i).padStart(2, "0")}` : null,
       visitas: Math.max(1, 23 - i), ultima_visita: new Date(Date.now() - dias * DIA).toISOString(),
-      created_at: new Date(Date.now() - (60 - i) * DIA).toISOString(),
+      created_at: new Date(Date.now() - (50 - i * 2) * DIA).toISOString(),
     };
   });
   const visitas = Array.from({ length: 96 }, (_, i) => ({ created_at: new Date(Date.now() - ((i * 5) % 14) * DIA - (i % 5) * 36e5).toISOString() }));
   const negocio: Negocio = { id: "demo", slug: "almadekh", nombre: "Almadekh", rubro: "Restaurante", color: "#7a3e2b", espera_horas: 6, vence_dias: 60, estado: "prueba", inicio_prueba: new Date(Date.now() - 12 * DIA).toISOString().slice(0, 10) };
-  return { negocio, clientes, visitas, canjes: 9 };
+  const premios: Premio[] = [{ id: "a", visitas: 5, nombre: "Café de cortesía" }, { id: "b", visitas: 10, nombre: "Postre gratis" }, { id: "c", visitas: 100, nombre: "Cena para dos" }];
+  return { negocio, clientes, visitas, canjes: 9, premios };
 }
 
 function Panel({ uid, demo = false }: { uid: string; demo?: boolean }) {
-  const [negocios, setNegocios] = useState<Negocio[]>([]);
+  const router = useRouter();
+  const [negocios, setNegocios] = useState<NegocioUsuario[]>([]);
   const [negId, setNegId] = useState("");
+  const [esSuper, setEsSuper] = useState(false);
   const [clientes, setClientes] = useState<Cli[]>([]);
+  const [total, setTotal] = useState(0);
+  const [premios, setPremios] = useState<Premio[]>([]);
   const [visitas, setVisitas] = useState<{ created_at: string }[]>([]);
   const [canjes, setCanjes] = useState(0);
   const [cargando, setCargando] = useState(false);
@@ -38,10 +46,15 @@ function Panel({ uid, demo = false }: { uid: string; demo?: boolean }) {
   const [copiado, setCopiado] = useState("");
 
   useEffect(() => {
-    if (demo) { const d = datosDemo(); setNegocios([d.negocio]); setNegId("demo"); setClientes(d.clientes); setVisitas(d.visitas); setCanjes(d.canjes); setCargoNegocios(true); return; }
+    if (demo) { const d = datosDemo(); setNegocios([d.negocio]); setNegId("demo"); setClientes(d.clientes); setTotal(d.clientes.length); setVisitas(d.visitas); setCanjes(d.canjes); setPremios(d.premios); setCargoNegocios(true); return; }
     const forzado = new URLSearchParams(location.search).get("n");
-    negociosDelUsuario(uid, forzado).then((l) => { setNegocios(l); if (l[0]) setNegId(l[0].id); setCargoNegocios(true); });
-  }, [uid, demo]);
+    sb.from("perfiles").select("es_superadmin").eq("id", uid).maybeSingle().then(({ data }) => setEsSuper(!!data?.es_superadmin));
+    negociosDelUsuario(uid, forzado).then((l) => {
+      // Un empleado no ve el panel (la lista de clientes es del dueño): va directo a escanear.
+      if (l.length && l.every((n) => n.rol === "empleado")) { router.replace("/escanear/"); return; }
+      setNegocios(l); if (l[0]) setNegId(l[0].id); setCargoNegocios(true);
+    });
+  }, [uid, demo, router]);
 
   useEffect(() => {
     if (!negId || demo) return;
@@ -51,8 +64,11 @@ function Panel({ uid, demo = false }: { uid: string; demo?: boolean }) {
       sb.from("clientes").select("token,id,numero_socio,nombre,telefono,email,cumple,visitas,ultima_visita,created_at").eq("negocio_id", negId).order("numero_socio").limit(5000),
       sb.from("visitas").select("created_at").eq("negocio_id", negId).gte("created_at", desde).limit(5000),
       sb.from("canjes").select("id", { count: "exact", head: true }).eq("negocio_id", negId),
-    ]).then(([c, v, k]) => {
+      sb.from("clientes").select("id", { count: "exact", head: true }).eq("negocio_id", negId),
+      sb.from("premios").select("id,visitas,nombre").eq("negocio_id", negId).eq("activo", true).order("visitas"),
+    ]).then(([c, v, k, t, p]) => {
       setClientes((c.data as Cli[]) ?? []); setVisitas((v.data as { created_at: string }[]) ?? []); setCanjes(k.count ?? 0);
+      setTotal(t.count ?? 0); setPremios((p.data as Premio[]) ?? []);
       setCargando(false);
     });
   }, [negId, demo]);
@@ -74,6 +90,7 @@ function Panel({ uid, demo = false }: { uid: string; demo?: boolean }) {
   // El contador solo vale mientras la tarjeta no esté vencida.
   const vigentes = (c: Cli) => (c.ultima_visita && ahora - new Date(c.ultima_visita).getTime() <= venceMs ? c.visitas : 0);
   const dormidos = clientes.filter((c) => !c.ultima_visita || ahora - new Date(c.ultima_visita).getTime() > 30 * DIA);
+  const nuevos = clientes.filter((c) => ahora - new Date(c.created_at).getTime() <= 30 * DIA).length;
   const top = [...clientes].sort((a, b) => vigentes(b) - vigentes(a)).slice(0, 10);
   const mes = new Date().getMonth();
   const cumples = clientes.filter((c) => c.cumple && new Date(c.cumple + "T00:00:00").getMonth() === mes)
@@ -91,10 +108,25 @@ function Panel({ uid, demo = false }: { uid: string; demo?: boolean }) {
   return (
     <>
       {negocios.length > 1 && <select value={negId} onChange={(e) => setNegId(e.target.value)}>{negocios.map((n) => <option key={n.id} value={n.id}>{n.nombre}</option>)}</select>}
-      <h1>{neg?.nombre}</h1>
+      <div className="top" style={{ flexWrap: "wrap" }}>
+        <h1>{neg?.nombre}</h1>
+        <div className="links">
+          <Link href="/guia/">Cómo se usa</Link>
+          {neg && <Link href={demo ? "/cartel/?demo=1" : `/cartel/?n=${neg.slug}`}>Cartel para el mostrador</Link>}
+          {esSuper && <Link href="/admin/">Administración</Link>}
+        </div>
+      </div>
       {cargando && <p className="muted">Cargando…</p>}
+      <section className="hero">
+        <div>
+          <p><b>{total}</b> {total === 1 ? "cliente tiene" : "clientes tienen"} tu tarjeta</p>
+          <p className="small muted">{nuevos ? `${nuevos} ${nuevos === 1 ? "se sumó" : "se sumaron"} en los últimos 30 días` : "Todavía nadie nuevo en los últimos 30 días"}</p>
+        </div>
+        <Link className="btn" href="/escanear/" style={neg ? marca(neg.color) : undefined}>Escanear tarjeta</Link>
+      </section>
+      <BotonInstalar texto="Instalar Habitué en este celular" className="btn ghost" />
       <div className="kpis">
-        <div className="kpi"><b>{clientes.length}</b><span>Socios</span></div>
+        <div className="kpi"><b>{porDia[13].n}</b><span>Visitas hoy</span></div>
         <div className="kpi"><b>{visitas.length}</b><span>Visitas (14 días)</span></div>
         <div className="kpi"><b>{canjes}</b><span>Premios entregados</span></div>
         <div className="kpi"><b>{dormidos.length}</b><span>Dormidos (+30 días)</span></div>
@@ -110,6 +142,13 @@ function Panel({ uid, demo = false }: { uid: string; demo?: boolean }) {
       <section className="box"><h2>Top 10 de clientes</h2>
         <table><thead><tr><th>Socio</th><th>Nombre</th><th>Visitas</th></tr></thead>
           <tbody>{top.map((c) => <tr key={c.id}><td>{socio(c.numero_socio)}</td><td>{c.nombre}</td><td>{vigentes(c)}</td></tr>)}</tbody></table>
+      </section>
+
+      <section className="box"><h2>Tus premios</h2>
+        <div>{premios.length ? premios.map((p) => (
+          <div className="pr" key={p.id}><span>{p.nombre}</span><span className="chip c-neutral">{p.visitas} visitas</span></div>))
+          : <p className="muted small">Todavía no hay premios cargados.</p>}</div>
+        <p className="small muted">Las visitas no se descuentan al canjear: cada premio se entrega una vez. Para cambiar o sumar un premio, escribinos por WhatsApp.</p>
       </section>
 
       <section className="box"><h2>Cumpleaños del mes</h2>

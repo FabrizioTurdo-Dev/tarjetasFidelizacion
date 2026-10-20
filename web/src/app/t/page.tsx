@@ -2,8 +2,9 @@
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { sb } from "@/lib/supabase";
-import { BASE, iniciales, marca, msg, socio, type EstadoCliente } from "@/lib/util";
+import { BASE, esIos, iniciales, marca, msg, socio, type EstadoCliente } from "@/lib/util";
 import { Qr } from "@/components/Qr";
+import { BotonInstalar, ManifestCliente } from "@/components/Instalar";
 import { agregarToken, tokensGuardados } from "@/lib/tarjetas";
 import Link from "next/link";
 
@@ -16,12 +17,14 @@ function Tarjeta() {
   const [tuto, setTuto] = useState(false);
   const [ios, setIos] = useState(false);
   const [cantidad, setCantidad] = useState(0);
+  const [copiado, setCopiado] = useState(false);
+  const [puedeEnviar, setPuedeEnviar] = useState(false);
 
   useEffect(() => {
-    const esIos = /iP(hone|ad|od)/.test(navigator.userAgent);
     const standalone = (navigator as unknown as { standalone?: boolean }).standalone === true;
-    setIos(esIos);
-    if (esIos && !standalone) setTuto(true);
+    setIos(esIos());
+    if (esIos() && !standalone) setTuto(true);
+    setPuedeEnviar(typeof navigator.share === "function");
   }, []);
 
   useEffect(() => {
@@ -56,6 +59,14 @@ function Tarjeta() {
   const pct = sig ? Math.max(4, Math.round(((n - desde) / (sig.visitas - desde)) * 100)) : 100;
   const qrTexto = `${location.origin}${BASE}/t/?k=${k || "demo"}`;
 
+  async function copiar() {
+    try { await navigator.clipboard.writeText(qrTexto); setCopiado(true); setTimeout(() => setCopiado(false), 2000); }
+    catch { /* sin portapapeles: el link queda a la vista para copiarlo a mano */ }
+  }
+  async function enviar() {
+    try { await navigator.share({ title: `Mi tarjeta de ${c!.negocio.nombre}`, url: qrTexto }); } catch { /* canceló */ }
+  }
+
   return (
     <main className="screen" style={marca(c.negocio.color)}>
       {cantidad > 1 && <Link href="/mis-tarjetas/" className="btn ghost">Ver mis {cantidad} tarjetas</Link>}
@@ -75,7 +86,7 @@ function Tarjeta() {
         </div>
         <div><div className="bar" aria-hidden><i style={{ width: pct + "%" }} /></div>
           <div className="bar-l"><span>{sig ? (prev ? prev.visitas + " ✓" : "0") : ""}</span><span>{sig ? sig.visitas : P.length ? P[P.length - 1].visitas + " ✓" : ""}</span></div></div>
-        <div className="qrwrap"><Qr texto={qrTexto} /><span>Mostralo al pagar</span></div>
+        <div className="qrwrap"><Qr texto={qrTexto} /><span>Mostralo al pagar o decí tu número de socio</span></div>
       </section>
 
       {c.vence_el
@@ -83,6 +94,7 @@ function Tarjeta() {
         : c.vencida ? <p className="small muted">Tu tarjeta venció por inactividad. Tu próxima visita cuenta como la primera.</p> : null}
 
       {ios && <button className="btn dark" onClick={() => setTuto(true)}>Guardar en la pantalla de inicio</button>}
+      <BotonInstalar texto="Guardar en la pantalla de inicio" />
 
       <section className="box"><h2>Premios</h2>
         <div>{P.length ? P.map((p) => (
@@ -93,6 +105,14 @@ function Tarjeta() {
           </div>)) : <p className="muted small">Este negocio todavía no cargó premios.</p>}</div>
         <p className="small muted">Tus visitas siguen sumando cuando canjeás un premio. Para canjear, mostrá la tarjeta en la caja.</p>
       </section>
+      <section className="box"><h2>El link de tu tarjeta</h2>
+        <p className="small muted">Guardalo para vos (por ejemplo, en tu propio chat de WhatsApp o en Notas): con este link abrís tu tarjeta desde cualquier celular, aunque cambies de teléfono. No lo compartas: quien lo tenga puede ver tu tarjeta.</p>
+        <p className="linkt">{qrTexto}</p>
+        <div className={puedeEnviar ? "row2" : undefined}>
+          <button className="btn ghost" onClick={copiar}>{copiado ? "¡Copiado!" : "Copiar link"}</button>
+          {puedeEnviar && <button className="btn ghost" onClick={enviar}>Enviar…</button>}
+        </div>
+      </section>
       <p className="muted small" style={{ textAlign: "center" }}>Funciona con Habitué · <Link href="/mis-tarjetas/">Mis tarjetas</Link></p>
 
       {tuto && (
@@ -102,7 +122,7 @@ function Tarjeta() {
           <ol className="steps">
             <li><span>Tocá <b>Compartir</b> en la barra de Safari, abajo.</span></li>
             <li><span>Bajá y tocá <b>Agregar a inicio</b>.</span></li>
-            <li><span>Tocá <b>Agregar</b>. Vas a ver el ícono de {c.negocio.nombre} en tu pantalla.</span></li>
+            <li><span>Tocá <b>Agregar</b>. Vas a ver el ícono de Habitué en tu pantalla: abre directo tu tarjeta de {c.negocio.nombre}.</span></li>
           </ol>
           <button className="btn" onClick={() => setTuto(false)}>Entendido</button>
         </div>
@@ -111,4 +131,4 @@ function Tarjeta() {
   );
 }
 
-export default function Page() { return <Suspense><Tarjeta /></Suspense>; }
+export default function Page() { return <><ManifestCliente /><Suspense><Tarjeta /></Suspense></>; }

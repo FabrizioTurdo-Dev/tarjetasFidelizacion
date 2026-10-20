@@ -14,6 +14,7 @@ const ERRORES: Record<string, string> = {
   premio_invalido: "Ese premio no existe.",
   visitas_insuficientes: "Todavía no llegó a las visitas de ese premio.",
   ya_canjeado: "Ese premio ya fue entregado.",
+  socio_inexistente: "No hay ningún socio con ese número en este negocio.",
   usuario_inexistente: "Ese mail no tiene usuario. Crealo primero en Supabase Auth.",
   "Invalid login credentials": "Mail o contraseña incorrectos.",
 };
@@ -62,6 +63,10 @@ export type EstadoCliente = {
   negocio: { nombre: string; color: string; slug: string; logo_url: string | null };
   premios: Premio[];
 };
+
+/** iPhone o iPad (el iPad moderno se presenta como Mac con pantalla táctil). */
+export const esIos = () => typeof navigator !== "undefined" &&
+  (/iP(hone|ad|od)/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1));
 
 export const socio =(n: number) => "#" + String(n).padStart(4, "0");
 export const diasPrueba = (n: Pick<Negocio, "inicio_prueba">) => {

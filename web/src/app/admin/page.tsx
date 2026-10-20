@@ -1,5 +1,6 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { RequireAuth } from "@/components/Auth";
 import { Qr } from "@/components/Qr";
 import { sb } from "@/lib/supabase";
@@ -29,10 +30,12 @@ const DEMO_MIEMBROS: Record<string, Miembro[]> = {
   d2: [{ user_id: "u3", email: "pablo@cafemarte.com", rol: "dueno" }],
   d3: [],
 };
+const DEMO_SOCIOS: Record<string, number> = { d1: 24, d2: 87, d3: 12 };
 
 function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
   const [esSuper, setEsSuper] = useState<boolean | null>(null);
   const [lista, setLista] = useState<Negocio[]>([]);
+  const [socios, setSocios] = useState<Record<string, number>>({});
   const [sel, setSel] = useState<string | null>(null);
   const [ed, setEd] = useState<Negocio | null>(null);
   const [premios, setPremios] = useState<PremioEd[]>([]);
@@ -43,12 +46,16 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
 
   const cargarLista = useCallback(async () => {
     const { data } = await sb.from("negocios").select("*").order("created_at");
-    setLista((data as Negocio[]) ?? []);
-    return (data as Negocio[]) ?? [];
+    const l = (data as Negocio[]) ?? [];
+    setLista(l);
+    // Clientes con tarjeta en cada negocio (conteo exacto, sin traer los datos).
+    Promise.all(l.map((n) => sb.from("clientes").select("id", { count: "exact", head: true }).eq("negocio_id", n.id)
+      .then(({ count }) => [n.id, count ?? 0] as const))).then((r) => setSocios(Object.fromEntries(r)));
+    return l;
   }, []);
 
   useEffect(() => {
-    if (demo) { setEsSuper(true); setLista(DEMO_NEGOCIOS); setSel("d1"); return; }
+    if (demo) { setEsSuper(true); setLista(DEMO_NEGOCIOS); setSocios(DEMO_SOCIOS); setSel("d1"); return; }
     sb.from("perfiles").select("es_superadmin").eq("id", uid).maybeSingle().then(({ data }) => {
       setEsSuper(!!data?.es_superadmin);
       if (data?.es_superadmin) cargarLista().then((l) => l[0] && setSel(l[0].id));
@@ -138,7 +145,7 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
           return (
             <button key={n.id} className="neg" aria-current={n.id === sel} onClick={() => setSel(n.id)}>
               <span className="row"><strong>{n.nombre}</strong><span className={"chip " + e[0]}>{e[1]}</span></span>
-              <span className="muted small">{n.estado === "prueba" ? (d > 0 ? `${d} días de prueba` : "Prueba terminada") : n.rubro || ""}</span>
+              <span className="muted small">{socios[n.id] === undefined ? "" : `${socios[n.id]} ${socios[n.id] === 1 ? "cliente" : "clientes"} · `}{n.estado === "prueba" ? (d > 0 ? `${d} días de prueba` : "Prueba terminada") : n.rubro || ""}</span>
             </button>);
         })}
         <button className="btn dark" onClick={nuevo}>+ Nuevo negocio</button>
@@ -146,7 +153,11 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
 
       {ed ? (<>
         <section className="box">
-          <h2>{ed.nombre}</h2>
+          <div className="top" style={{ flexWrap: "wrap" }}>
+            <h2>{ed.nombre}</h2>
+            <span className="chip c-neutral">{socios[ed.id] ?? "…"} {socios[ed.id] === 1 ? "cliente tiene" : "clientes tienen"} la tarjeta</span>
+          </div>
+          {!demo && <div className="links"><Link href={`/panel/?n=${lista.find((x) => x.id === ed.id)?.slug ?? ed.slug}`}>Ver su panel: clientes y links de cada tarjeta →</Link></div>}
           <label>Nombre del negocio<input value={ed.nombre} onChange={(e) => set("nombre", e.target.value)} /></label>
           <div className="row2">
             <label>Rubro<input value={ed.rubro ?? ""} onChange={(e) => set("rubro", e.target.value)} placeholder="Restaurante, peluquería…" /></label>
@@ -207,6 +218,7 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
             <h2>QR para el mostrador</h2>
             <div className="qrwrap"><Qr texto={urlAlta} /></div>
             <p className="small muted" style={{ wordBreak: "break-all" }}>{urlAlta}</p>
+            <Link className="btn dark" href={demo ? "/cartel/?demo=1" : `/cartel/?n=${lista.find((x) => x.id === ed.id)?.slug ?? ed.slug}`}>Imprimir cartel para el mostrador</Link>
           </div>
         </aside>
       </>) : <p className="muted">Elegí un negocio o creá uno nuevo.</p>}

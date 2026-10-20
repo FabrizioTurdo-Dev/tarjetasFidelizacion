@@ -30,7 +30,7 @@ Argumento de venta: *"Sabé quiénes son tus clientes y hacelos volver, sin que 
 | Período de espera entre visitas | 6 horas |
 | Premios | Escalera de premios por negocio (ej. 10 visitas: café, 20: torta, 100: cena). Las visitas son acumuladas: canjear NO las descuenta. Cada premio se canjea una vez. Los carga el superadmin; el dueño los edita en la versión 2 o 3. Visitas como moneda (canjear descuenta): con puntos, versión 2 |
 | Vencimiento | Por inactividad: si pasan 60 días sin visitas, el contador se reinicia y la visita nueva cuenta como 1. Cada visita reinicia el plazo |
-| Aviso de vencimiento | La tarjeta muestra cuándo vencen; recordatorio 7 días antes |
+| Aviso de vencimiento | La tarjeta muestra cuándo vencen. Recordatorio 7 días antes: versión 2 |
 | Alta de negocios | Manual |
 | Prueba gratis | 30 días desde el alta |
 | Cobro en el MVP | Manual (transferencia o link de pago) |

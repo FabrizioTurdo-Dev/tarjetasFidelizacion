@@ -1,15 +1,17 @@
 "use client";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { sb } from "@/lib/supabase";
-import { BASE, iniciales, marca, socio, type EstadoCliente } from "@/lib/util";
+import { BASE, esIos, iniciales, marca, socio, type EstadoCliente } from "@/lib/util";
 import { agregarToken, quitarToken, tokensDeTexto, tokensGuardados } from "@/lib/tarjetas";
+import { ManifestCliente } from "@/components/Instalar";
 
 type Item = { token: string; c: EstadoCliente | null };
 
 function Mis() {
   const q = useSearchParams();
+  const router = useRouter();
   const [items, setItems] = useState<Item[] | null>(null);
   const [pegado, setPegado] = useState("");
   const [err, setErr] = useState("");
@@ -23,12 +25,18 @@ function Mis() {
       return { token, c: error ? null : (data as EstadoCliente) };
     }));
     setItems(res);
+    return res;
   }, []);
 
   useEffect(() => {
     tokensDeTexto(q.get("k") || "").forEach(agregarToken); // tarjetas que vienen en el link
-    cargar();
-  }, [q, cargar]);
+    // ?inicio=1 es la dirección del ícono de Android: con una sola tarjeta, se abre directo.
+    const inicio = q.has("inicio");
+    cargar().then((res) => {
+      const ok = res.filter((x) => x.c);
+      if (inicio && ok.length === 1) router.replace(`/t/?k=${ok[0].token}`);
+    });
+  }, [q, cargar, router]);
 
   function agregar(e: React.FormEvent) {
     e.preventDefault();
@@ -37,7 +45,7 @@ function Mis() {
     t.forEach(agregarToken); setPegado(""); setErr(""); cargar();
   }
 
-  const esIos = typeof navigator !== "undefined" && /iP(hone|ad|od)/.test(navigator.userAgent);
+  const ios = esIos();
 
   return (
     <main className="screen">
@@ -69,14 +77,16 @@ function Mis() {
         }}>Vaciar la lista</button>
       )}
 
-      {esIos && !!items?.length && (
+      {ios && !!items?.length && (
         <section className="box"><h2>Todas en un solo ícono</h2>
           <p className="small muted">En Safari tocá <b>Compartir</b> → <b>Agregar a inicio</b> desde <b>esta</b> pantalla. Así el ícono de Habitué abre todas tus tarjetas.</p></section>
       )}
 
       <form className="box" onSubmit={agregar}>
         <h2>Agregar una tarjeta</h2>
-        <p className="small muted">Si guardaste esta pantalla en el inicio, las tarjetas nuevas se crean en Safari. Pegá acá el link de la tarjeta para sumarla.</p>
+        <p className="small muted">{ios
+          ? "En iPhone, el ícono de la pantalla de inicio no ve las tarjetas que abrís en Safari. Abrí la tarjeta nueva, tocá \"Copiar link\" y pegalo acá."
+          : "Abrí la tarjeta nueva, tocá \"Copiar link\" y pegalo acá."}</p>
         <label>Link de la tarjeta<input value={pegado} onChange={(e) => setPegado(e.target.value)} placeholder="https://…/t/?k=…" /></label>
         {err && <div className="errmsg">{err}</div>}
         <button className="btn dark">Agregar</button>
@@ -85,4 +95,4 @@ function Mis() {
   );
 }
 
-export default function Page() { return <Suspense><Mis /></Suspense>; }
+export default function Page() { return <><ManifestCliente /><Suspense><Mis /></Suspense></>; }

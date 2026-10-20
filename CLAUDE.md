@@ -19,7 +19,7 @@ El cliente final la tiene en el celular sin descargar apps; el negocio la admini
 | Premios | Escalera por negocio (ej. 10 visitas: café, 20: torta, 100: cena). Visitas acumuladas: canjear NO las descuenta; cada premio se canjea una vez. Los carga el superadmin (el dueño los edita en v2/v3). Visitas como moneda: con puntos, v2 |
 | Período de espera entre visitas | 6 horas (configurable por negocio) |
 | Vencimiento | Por inactividad: si pasan 60 días sin visitas, el contador se reinicia y la visita nueva cuenta como 1. Cada visita reinicia el plazo de 60 días |
-| Aviso de vencimiento | La tarjeta muestra cuándo vencen las visitas; recordatorio 7 días antes |
+| Aviso de vencimiento | La tarjeta muestra cuándo vencen las visitas. Recordatorio 7 días antes: versión 2 (decidido 20/10/2026) |
 | Android | Google Wallet (cuenta de emisor gratis; arranca en modo demo) |
 | iPhone | Tarjeta web con link secreto, guardada en la pantalla de inicio. Tutorial automático al abrirla desde iPhone (Compartir → Agregar a inicio). Apple Wallet con cuenta propia en versión 2 |
 | Alta de negocios | Manual, la hace el superadmin con los datos que pasa el negocio |
@@ -45,8 +45,11 @@ El cliente final la tiene en el celular sin descargar apps; el negocio la admini
 - Si más adelante hay cobros: checkout de Mercado Pago, verificar firma de webhooks y consultar el estado real a la API.
 
 ## Importante sobre Supabase
-- La cuenta de Supabase conectada por MCP al 19/10/2026 es de **un cliente de Fabri**, no de este proyecto. **No usarla ni crear nada ahí.**
-- La base de datos de este proyecto se crea cuando Fabri conecte su propia cuenta. Mientras tanto, el prototipo usa datos de ejemplo.
+- Hay dos Supabase conectados y conviven en paralelo:
+  - **`tarjeta-fidelizacion`** (cuenta nueva de Fabri, ref `jswxklihzpbgbzezfnoi`, definido en `.mcp.json`): es la base de ESTE proyecto.
+  - La conectada antes por MCP (tools `mcp__2f674ea8-…`) es de **un cliente de Fabri**. **No usarla ni crear nada ahí.**
+- Antes de CUALQUIER cambio en una base de datos (migraciones, SQL, funciones, tablas), preguntar a Fabri y confirmar que el destino es `tarjeta-fidelizacion`. Nunca asumirlo.
+- Fabri autentica el servidor con `claude /mcp` en una terminal normal. Hasta que lo haga, las tools de `tarjeta-fidelizacion` no están disponibles.
 
 ## Estructura actual y GitHub Pages
 - Repo: https://github.com/FabrizioTurdo-Dev/tarjetasFidelizacion — publicado con GitHub Pages (rama main, carpeta raíz).
@@ -55,6 +58,8 @@ El cliente final la tiene en el celular sin descargar apps; el negocio la admini
   - Para actualizarlo se editan esos JSON. Estados de tareas: Pendiente, En curso, Hecho. Estados de comercios: Contactado, Interesado, Faltan datos, Datos recibidos, Habilitado, Pagando, Descartado. `inicio` en formato AAAA-MM-DD; la prueba dura 30 días.
   - El repo es público: en `data/comercios.json` NO van teléfonos, mails ni datos personales. Eso va en `privado/contactos.md` (en .gitignore).
 - `prototipo/`: pantallas estáticas con datos de ejemplo ("Café Lunar" y "Café Marte"): alta, tarjeta (con tutorial de iPhone), escanear, panel del dueño y `admin.html` (superadmin). Los datos comunes están en `prototipo/datos.js` (se guardan en localStorage del navegador; `?n=<id>` elige el negocio). Estilos compartidos en `prototipo/estilos.css`; `--marca` es el color del comercio.
+- App real (`web/`): ícono de pantalla de inicio con manifiestos en `web/public/`: `manifest-negocio` (panel, escanear, guía; abre el panel y tiene atajo "Escanear"), `manifest-admin` y `manifest-cliente` (abre "Mis tarjetas"). El de clientes se agrega por JS y **nunca en iPhone**: allá el ícono tiene que guardar la dirección exacta con el token de la tarjeta, y su memoria está separada de Safari.
+- `/guia/` es la guía de uso para los negocios (sin login). Los empleados que abren el panel van directo al escáner. El escáner acepta el número de socio (función `buscar_socio`, migración 0003).
 - GitHub Pages solo sirve archivos estáticos. La app real (Next.js + Supabase) se publicará en otro lado (por ejemplo, Vercel); Pages queda para el tablero y el prototipo.
 
 ## Git

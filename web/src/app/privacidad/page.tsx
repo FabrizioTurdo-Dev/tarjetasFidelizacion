@@ -1,14 +1,15 @@
-// Falta el domicilio del responsable (lo pide el art. 6 de la Ley 25.326). Conviene que la revise un abogado.
+// Domicilio provisorio (solo la localidad): cambiarlo por una casilla de correo u oficina virtual al empezar a cobrar.
+// Conviene que la revise un abogado.
 export const metadata = { title: "Política de privacidad · Habitué" };
 
 export default function Privacidad() {
   return (
     <main className="screen" style={{ gap: 14 }}>
       <h1>Política de privacidad</h1>
-      <p className="muted small">Última actualización: 20/10/2026 · Borrador</p>
+      <p className="muted small">Última actualización: 20/10/2026</p>
 
       <h2>Quiénes somos</h2>
-      <p>Habitué es una plataforma de tarjetas de fidelización digitales que presta el servicio a comercios de Argentina. Cada comercio decide para qué usa los datos de sus clientes. Habitué los guarda y procesa por cuenta del comercio. Responsable de la plataforma: Fabrizio Marcelo Turdó, CUIT 20-42229376-1, domicilio: [domicilio], contacto: devfabri@gmail.com.</p>
+      <p>Habitué es una plataforma de tarjetas de fidelización digitales que presta el servicio a comercios de Argentina. Cada comercio decide para qué usa los datos de sus clientes. Habitué los guarda y procesa por cuenta del comercio. Responsable de la plataforma: Fabrizio Marcelo Turdó, CUIT 20-42229376-1, domicilio: Ingeniero Maschwitz, partido de Escobar, provincia de Buenos Aires, contacto: devfabri@gmail.com.</p>
 
       <h2>Qué datos guardamos</h2>
       <p>Solo los que hacen falta para tu tarjeta: tu nombre, tu teléfono o mail, tu fecha de cumpleaños (si la cargás, es opcional), tu número de socio, y el registro de tus visitas y de los premios que canjeás. <b>No pedimos DNI ni datos de pago.</b></p>

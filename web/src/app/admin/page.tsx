@@ -33,7 +33,7 @@ async function funcionUsuarios(body: Record<string, unknown>): Promise<string | 
 // Vista demo (/admin/?demo=1): datos de ejemplo, sin login ni base de datos. No guarda nada.
 const hoy = (d: number) => new Date(Date.now() + d * 864e5).toISOString().slice(0, 10);
 const DEMO_NEGOCIOS: Negocio[] = [
-  { id: "d1", slug: "almadekh", nombre: "Almadekh", rubro: "Restaurante", color: "#7a3e2b", espera_horas: 6, vence_dias: 60, estado: "prueba", inicio_prueba: hoy(-12) },
+  { id: "d1", slug: "almadekh", nombre: "Almadekh", rubro: "Restaurante", color: "#7a3e2b", espera_horas: 6, vence_dias: 60, estado: "prueba", inicio_prueba: hoy(-12), resenas_url: "https://g.page/r/ejemplo/review" },
   { id: "d2", slug: "cafe-marte", nombre: "Café Marte", rubro: "Cafetería", color: "#b3261e", espera_horas: 6, vence_dias: 60, estado: "activa", inicio_prueba: hoy(-70) },
   { id: "d3", slug: "peluqueria-sol", nombre: "Peluquería Sol", rubro: "Peluquería", color: "#2f5d50", espera_horas: 24, vence_dias: 90, estado: "suspendida", inicio_prueba: hoy(-120) },
 ];
@@ -124,8 +124,10 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
     if (!ed.nombre.trim()) { setAviso({ ok: false, t: "Falta el nombre del negocio." }); return; }
     if (premios.some((p) => !p.nombre.trim() || p.visitas < 1)) { setAviso({ ok: false, t: "Completá nombre y visitas de cada premio, o quitá los que sobran." }); return; }
     if (new Set(premios.map((p) => p.visitas)).size !== premios.length) { setAviso({ ok: false, t: "Dos premios no pueden pedir la misma cantidad de visitas." }); return; }
+    const resenas_url = ed.resenas_url?.trim() || null;
+    if (resenas_url && !/^https:\/\/\S+$/.test(resenas_url)) { setAviso({ ok: false, t: "El link de reseñas tiene que empezar con https:// y no llevar espacios." }); return; }
     const { id, slug, nombre, rubro, color, espera_horas, vence_dias, estado, inicio_prueba } = ed;
-    const r = await sb.from("negocios").update({ slug: slugify(slug), nombre: nombre.trim(), rubro, color, espera_horas, vence_dias, estado, inicio_prueba }).eq("id", id);
+    const r = await sb.from("negocios").update({ slug: slugify(slug), nombre: nombre.trim(), rubro, color, espera_horas, vence_dias, estado, inicio_prueba, resenas_url }).eq("id", id);
     if (r.error) { setAviso({ ok: false, t: msg(r.error) }); return; }
 
     // Premios: los que ya no están se borran (o se desactivan si ya se canjearon); el resto se guarda.
@@ -251,6 +253,8 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
             <label>Espera entre visitas (horas)<input type="number" min={0} max={72} value={ed.espera_horas} onChange={(e) => set("espera_horas", parseInt(e.target.value) || 0)} /></label>
             <label>Vencimiento (días sin visitas)<input type="number" min={7} max={365} value={ed.vence_dias} onChange={(e) => set("vence_dias", parseInt(e.target.value) || 60)} /></label>
           </div>
+          <label>Link de reseñas de Google (opcional)<input type="url" value={ed.resenas_url ?? ""} onChange={(e) => set("resenas_url", e.target.value)} placeholder="https://g.page/r/…/review" /></label>
+          <p className="small muted" style={{ marginTop: -6 }}>El dueño lo saca de su Perfil de Empresa de Google → <b>Pedir reseñas</b>. Con el link cargado, la tarjeta le ofrece al cliente dejar su reseña a partir de la 2ª visita, una sola vez y sin nada a cambio.</p>
 
           <div><h2 style={{ marginBottom: 8 }}>Premios</h2>
             <p className="small muted" style={{ marginBottom: 8 }}>Las visitas son acumuladas: canjear un premio no las descuenta.</p>

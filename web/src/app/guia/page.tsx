@@ -13,7 +13,7 @@ export default function Guia() {
       </div>
       <nav className="noprint" aria-label="Secciones">
         <a href="#instalar">Instalar</a><a href="#clientes">Clientes nuevos</a><a href="#visitas">Sumar visitas</a>
-        <a href="#premios">Entregar premios</a><a href="#panel">Panel</a><a href="#problemas">Problemas frecuentes</a>
+        <a href="#premios">Entregar premios</a><a href="#resenas">Reseñas</a><a href="#panel">Panel</a><a href="#problemas">Problemas frecuentes</a>
       </nav>
 
       <section className="box">
@@ -75,8 +75,20 @@ export default function Guia() {
         <p><b>Vencimiento:</b> si un cliente pasa 60 días sin venir, sus visitas vencen y la próxima cuenta como la primera. Cada visita renueva el plazo, y el cliente ve en su tarjeta hasta cuándo tiene.</p>
       </section>
 
+      <section className="box" id="resenas">
+        <h2>5. Reseñas en Google</h2>
+        <p>Si nos pasás el link de <b>Pedir reseñas</b> de tu Perfil de Empresa de Google, la tarjeta invita a cada cliente a dejar su reseña a partir de su 2ª visita, cuando ya conoce el lugar. Se lo ofrece una sola vez y lo abre directo en las estrellas.</p>
+        <p><b>Lo que Google no permite</b> (y puede borrarte reseñas o penalizar tu ficha):</p>
+        <ul>
+          <li>Dar algo a cambio de una reseña: descuentos, visitas extra, premios o la tarjeta misma.</li>
+          <li>Pedírsela solo a los clientes contentos, o decirles qué tienen que escribir.</li>
+          <li>Presionar para que la hagan ahí, en el local, o ponerles metas de reseñas a los empleados.</li>
+        </ul>
+        <p className="tip">Sí podés decir: «Si te gustó, en tu tarjeta podés dejarnos una reseña». Sin nada a cambio y a todos por igual.</p>
+      </section>
+
       <section className="box" id="panel">
-        <h2>5. El panel (solo dueños)</h2>
+        <h2>6. El panel (solo dueños)</h2>
         <ul>
           <li><b>Clientes con tu tarjeta:</b> cuántos tenés y cuántos se sumaron en los últimos 30 días.</li>
           <li><b>Visitas</b> de hoy y de las últimas dos semanas, y <b>premios entregados</b>.</li>
@@ -85,12 +97,13 @@ export default function Guia() {
           <li><b>Cumpleaños del mes:</b> un saludo o un detalle suma mucho.</li>
           <li><b>Todos los clientes,</b> con su contacto, sus visitas y su última visita.</li>
           <li><b>Tus premios:</b> la escalera de premios que tiene tu tarjeta.</li>
+          <li><b>Reseñas en Google:</b> cuántos clientes tocaron el botón para dejar su reseña.</li>
           <li><b>Cartel para el mostrador:</b> si se te pierde o se rompe el del QR, lo volvés a imprimir desde ahí.</li>
         </ul>
       </section>
 
       <section className="box" id="problemas">
-        <h2>6. Problemas frecuentes</h2>
+        <h2>7. Problemas frecuentes</h2>
         <ul>
           <li><b>El cliente cambió de celular o borró la tarjeta.</b> En el panel, en <b>Todos los clientes</b>, tocá <b>Reenviar link</b> y mandáselo por WhatsApp. Recupera todas sus visitas.</li>
           <li><b>El cliente se quiere registrar de nuevo.</b> Cada teléfono o mail tiene una sola tarjeta por negocio: reenviale el link.</li>

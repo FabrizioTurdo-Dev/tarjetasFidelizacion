@@ -65,10 +65,14 @@ export type Negocio = {
   espera_horas: number; vence_dias: number;
   estado: "prueba" | "activa" | "vencida" | "suspendida" | "cancelada";
   inicio_prueba: string;
+  /** Link "Pedir reseñas" de su Perfil de Empresa de Google. */
+  resenas_url?: string | null;
 };
 export type EstadoCliente = {
   nombre: string; numero_socio: number; visitas: number; vence_el: string | null; vencida: boolean;
-  negocio: { nombre: string; color: string; slug: string; logo_url: string | null };
+  negocio: { nombre: string; color: string; slug: string; logo_url: string | null; resenas_url?: string | null };
+  /** Mostrar el botón de reseña (desde la 2ª visita, si el negocio tiene link y el cliente no lo usó ni lo descartó). */
+  pedir_resena?: boolean;
   premios: Premio[];
 };
 

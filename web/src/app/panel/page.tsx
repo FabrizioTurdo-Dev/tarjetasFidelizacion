@@ -8,7 +8,7 @@ import { sb } from "@/lib/supabase";
 import { negociosDelUsuario, type NegocioUsuario } from "@/lib/negocios";
 import { BASE, marca, socio, type Negocio, type Premio } from "@/lib/util";
 
-type Cli = { token: string; id: string; numero_socio: number; nombre: string; telefono: string | null; email: string | null; cumple: string | null; visitas: number; ultima_visita: string | null; created_at: string };
+type Cli = { token: string; id: string; numero_socio: number; nombre: string; telefono: string | null; email: string | null; cumple: string | null; visitas: number; ultima_visita: string | null; created_at: string; resena_abierta_at: string | null };
 const DIA = 864e5;
 
 // Vista demo (/panel/?demo=1): un negocio de ejemplo con actividad, sin login ni base de datos.
@@ -23,10 +23,11 @@ function datosDemo() {
       cumple: i % 6 === 0 ? `1990-${String(mes + 1).padStart(2, "0")}-${String(3 + i).padStart(2, "0")}` : null,
       visitas: Math.max(1, 23 - i), ultima_visita: new Date(Date.now() - dias * DIA).toISOString(),
       created_at: new Date(Date.now() - (50 - i * 2) * DIA).toISOString(),
+      resena_abierta_at: i % 3 === 0 ? new Date(Date.now() - i * DIA).toISOString() : null,
     };
   });
   const visitas = Array.from({ length: 96 }, (_, i) => ({ created_at: new Date(Date.now() - ((i * 5) % 14) * DIA - (i % 5) * 36e5).toISOString() }));
-  const negocio: Negocio = { id: "demo", slug: "almadekh", nombre: "Almadekh", rubro: "Restaurante", color: "#7a3e2b", espera_horas: 6, vence_dias: 60, estado: "prueba", inicio_prueba: new Date(Date.now() - 12 * DIA).toISOString().slice(0, 10) };
+  const negocio: Negocio = { id: "demo", slug: "almadekh", nombre: "Almadekh", rubro: "Restaurante", color: "#7a3e2b", espera_horas: 6, vence_dias: 60, estado: "prueba", inicio_prueba: new Date(Date.now() - 12 * DIA).toISOString().slice(0, 10), resenas_url: "https://g.page/r/ejemplo/review" };
   const premios: Premio[] = [{ id: "a", visitas: 5, nombre: "Café de cortesía" }, { id: "b", visitas: 10, nombre: "Postre gratis" }, { id: "c", visitas: 100, nombre: "Cena para dos" }];
   return { negocio, clientes, visitas, canjes: 9, premios };
 }
@@ -61,7 +62,7 @@ function Panel({ uid, demo = false }: { uid: string; demo?: boolean }) {
     setCargando(true);
     const desde = new Date(Date.now() - 14 * DIA).toISOString();
     Promise.all([
-      sb.from("clientes").select("token,id,numero_socio,nombre,telefono,email,cumple,visitas,ultima_visita,created_at").eq("negocio_id", negId).order("numero_socio").limit(5000),
+      sb.from("clientes").select("token,id,numero_socio,nombre,telefono,email,cumple,visitas,ultima_visita,created_at,resena_abierta_at").eq("negocio_id", negId).order("numero_socio").limit(5000),
       sb.from("visitas").select("created_at").eq("negocio_id", negId).gte("created_at", desde).limit(5000),
       sb.from("canjes").select("id", { count: "exact", head: true }).eq("negocio_id", negId),
       sb.from("clientes").select("id", { count: "exact", head: true }).eq("negocio_id", negId),
@@ -101,6 +102,7 @@ function Panel({ uid, demo = false }: { uid: string; demo?: boolean }) {
     return { d, n: visitas.filter((v) => new Date(v.created_at).toDateString() === key).length };
   });
   const maxDia = Math.max(1, ...porDia.map((x) => x.n));
+  const resenas = clientes.filter((c) => c.resena_abierta_at).length;
   const fecha = (s: string | null) => (s ? new Date(s).toLocaleDateString("es-AR") : "—");
 
   if (!cargoNegocios) return <p className="muted">Cargando…</p>;
@@ -137,6 +139,13 @@ function Panel({ uid, demo = false }: { uid: string; demo?: boolean }) {
           {porDia.map((x, i) => <div key={i} title={`${x.d.toLocaleDateString("es-AR")}: ${x.n}`} style={{ flex: 1, background: "var(--ink)", opacity: .8, borderRadius: 3, height: Math.max(3, (x.n / maxDia) * 90) }} />)}
         </div>
         <div className="bar-l muted" style={{ opacity: 1 }}><span>{porDia[0].d.toLocaleDateString("es-AR")}</span><span>hoy</span></div>
+      </section>
+
+      <section className="box"><h2>Reseñas en Google</h2>
+        {neg?.resenas_url ? (<>
+          <p><b>{resenas}</b> {resenas === 1 ? "cliente tocó" : "clientes tocaron"} «Dejar mi reseña» desde su tarjeta.</p>
+          <p className="small muted">La tarjeta se lo ofrece a cada cliente desde su 2ª visita, una sola vez. Google no nos avisa si la publicaron: las reseñas las ves en tu ficha de Google.</p>
+        </>) : <p className="small muted">Tu tarjeta puede invitar a tus clientes a dejar una reseña en Google desde su 2ª visita. Para activarlo, pasanos por WhatsApp el link de <b>Pedir reseñas</b> de tu Perfil de Empresa de Google.</p>}
       </section>
 
       <section className="box"><h2>Top 10 de clientes</h2>

@@ -19,6 +19,7 @@ function Tarjeta() {
   const [cantidad, setCantidad] = useState(0);
   const [copiado, setCopiado] = useState(false);
   const [puedeEnviar, setPuedeEnviar] = useState(false);
+  const [resena, setResena] = useState<"" | "abierta" | "cerrada">("");
 
   useEffect(() => {
     const standalone = (navigator as unknown as { standalone?: boolean }).standalone === true;
@@ -31,8 +32,8 @@ function Tarjeta() {
     if (q.has("demo")) {
       // Vista demo (/t/?demo=1): una tarjeta de ejemplo con 12 visitas.
       const vence = new Date(Date.now() + 47 * 864e5).toISOString();
-      setC({ nombre: "Lucía", numero_socio: 42, visitas: 12, vence_el: vence, vencida: false,
-        negocio: { nombre: "Almadekh", color: "#7a3e2b", slug: "almadekh", logo_url: null },
+      setC({ nombre: "Lucía", numero_socio: 42, visitas: 12, vence_el: vence, vencida: false, pedir_resena: true,
+        negocio: { nombre: "Almadekh", color: "#7a3e2b", slug: "almadekh", logo_url: null, resenas_url: "https://g.page/r/ejemplo/review" },
         premios: [{ id: "a", visitas: 5, nombre: "Café de cortesía", ganado: true, canjeado: true },
           { id: "b", visitas: 10, nombre: "Postre gratis", ganado: true, canjeado: false },
           { id: "c", visitas: 20, nombre: "20% en la cuenta", ganado: false, canjeado: false },
@@ -66,6 +67,11 @@ function Tarjeta() {
   async function enviar() {
     try { await navigator.share({ title: `Mi tarjeta de ${c!.negocio.nombre}`, url: qrTexto }); } catch { /* canceló */ }
   }
+  // Anota que tocó el botón o lo descartó, para no volver a ofrecérselo. El link se abre igual aunque esto falle.
+  function marcarResena(abrio: boolean) {
+    setResena(abrio ? "abierta" : "cerrada");
+    if (k && !q.has("demo")) sb.rpc("marcar_resena", { p_token: k, p_abrio: abrio }).then(() => {});
+  }
 
   return (
     <main className="screen" style={marca(c.negocio.color)}>
@@ -92,6 +98,18 @@ function Tarjeta() {
       {c.vence_el
         ? <p className="small muted">Tus visitas vencen el {new Date(c.vence_el).toLocaleDateString("es-AR")} si no volvés antes. Cada visita renueva el plazo.</p>
         : c.vencida ? <p className="small muted">Tu tarjeta venció por inactividad. Tu próxima visita cuenta como la primera.</p> : null}
+
+      {/* Reseña en Google: se ofrece a todos por igual, sin nada a cambio (reglas de Google). */}
+      {c.pedir_resena && c.negocio.resenas_url && resena !== "cerrada" && (resena === "abierta"
+        ? <div className="welcome">¡Gracias por contar tu experiencia!</div>
+        : <section className="box">
+            <h2>¿Qué te pareció {c.negocio.nombre}?</h2>
+            <p className="small muted">Ya viniste {n} veces. Si tenés un minuto, contá tu experiencia en Google: ayuda a que más gente conozca el lugar.</p>
+            <div className="row2">
+              <a className="btn" href={c.negocio.resenas_url} target="_blank" rel="noopener noreferrer" onClick={() => marcarResena(true)}>Dejar mi reseña</a>
+              <button className="btn ghost" onClick={() => marcarResena(false)}>No, gracias</button>
+            </div>
+          </section>)}
 
       {ios && <button className="btn dark" onClick={() => setTuto(true)}>Guardar en la pantalla de inicio</button>}
       <BotonInstalar texto="Guardar en la pantalla de inicio" />

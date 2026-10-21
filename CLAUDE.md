@@ -20,6 +20,7 @@ El cliente final la tiene en el celular sin descargar apps; el negocio la admini
 | Período de espera entre visitas | 6 horas (configurable por negocio) |
 | Vencimiento | Por inactividad: si pasan 60 días sin visitas, el contador se reinicia y la visita nueva cuenta como 1. Cada visita reinicia el plazo de 60 días |
 | Aviso de vencimiento | La tarjeta muestra cuándo vencen las visitas. Recordatorio 7 días antes: versión 2 (decidido 20/10/2026) |
+| Reseñas en Google | Botón en la tarjeta desde la 2ª visita, una sola vez, a todos por igual. Nunca a cambio de nada ni con texto prearmado (reglas de Google). El link lo carga el superadmin. Volver a pedirla a las 50 visitas: más adelante (decidido 21/10/2026) |
 | Android | Google Wallet (cuenta de emisor gratis; arranca en modo demo) |
 | iPhone | Tarjeta web con link secreto, guardada en la pantalla de inicio. Tutorial automático al abrirla desde iPhone (Compartir → Agregar a inicio). Apple Wallet con cuenta propia en versión 2 |
 | Alta de negocios | Manual, la hace el superadmin con los datos que pasa el negocio |

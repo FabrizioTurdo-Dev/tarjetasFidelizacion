@@ -23,6 +23,8 @@
   {"fase": "3. Construcción del MVP", "titulo": "Contador de clientes con tarjeta (panel y administración)", "estado": "Hecho"},
   {"fase": "3. Construcción del MVP", "titulo": "Link de la tarjeta visible y número de socio en el escáner", "estado": "Hecho"},
   {"fase": "3. Construcción del MVP", "titulo": "Guía de uso para negocios (/guia/)", "estado": "Hecho"},
+  {"fase": "3. Construcción del MVP", "titulo": "Eliminar negocios desde Administración", "estado": "Hecho"},
+  {"fase": "3. Construcción del MVP", "titulo": "Botón de reseña en Google en la tarjeta (desde la 2ª visita)", "estado": "Hecho"},
   {"fase": "3. Construcción del MVP", "titulo": "Pruebas en Android y iPhone", "estado": "En curso"},
   {"fase": "4. Pilotos", "titulo": "Habilitar almadekh", "estado": "Pendiente"},
   {"fase": "4. Pilotos", "titulo": "Conseguir 2 pilotos más de otros rubros", "estado": "Pendiente"},

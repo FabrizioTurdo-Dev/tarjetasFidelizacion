@@ -66,6 +66,9 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
   const [avisoU, setAvisoU] = useState<{ ok: boolean; t: string } | null>(null);
   const [acceso, setAcceso] = useState("");
   const [copiado, setCopiado] = useState(false);
+  const [borrando, setBorrando] = useState(false);
+  const [confirmaNombre, setConfirmaNombre] = useState("");
+  const [borrado, setBorrado] = useState("");
 
   const cargarLista = useCallback(async () => {
     const { data } = await sb.from("negocios").select("*").order("created_at");
@@ -91,6 +94,7 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
     setAviso(null);
     setMiembros(null);
     setAvisoU(null); setAcceso(""); setCambiando(null);
+    setBorrando(false); setConfirmaNombre("");
     if (!n) return;
     if (demo) { setPremios(DEMO_PREMIOS[n.id] ?? []); setMiembros(DEMO_MIEMBROS[n.id] ?? []); return; }
     sb.from("premios").select("id,visitas,nombre").eq("negocio_id", n.id).eq("activo", true).order("visitas")
@@ -107,6 +111,7 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
 
   async function nuevo() {
     if (demo) return soloDemo();
+    setBorrado("");
     const slug = "negocio-" + Math.random().toString(36).slice(2, 7);
     const { data, error } = await sb.from("negocios").insert({ slug, nombre: "Nuevo negocio" }).select().single();
     if (error) { setAviso({ ok: false, t: msg(error) }); return; }
@@ -140,6 +145,20 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
     const l = await cargarLista();
     if (!l.find((x) => x.id === id)) setSel(l[0]?.id ?? null);
     setAviso({ ok: true, t: "Guardado." });
+  }
+
+  // Borra el negocio y, en cascada, sus premios, clientes, visitas, canjes y vínculos con usuarios.
+  // Los usuarios de Auth no se borran (pueden estar en otros negocios).
+  async function eliminar() {
+    if (!ed) return;
+    if (demo) return soloDemo();
+    const nombre = lista.find((x) => x.id === ed.id)?.nombre ?? ed.nombre;
+    const { data, error } = await sb.from("negocios").delete().eq("id", ed.id).select("id");
+    if (error) { setAviso({ ok: false, t: msg(error) }); return; }
+    if (!data?.length) { setAviso({ ok: false, t: "No se pudo eliminar. Cerrá sesión, volvé a entrar y probá de nuevo." }); return; }
+    const l = await cargarLista();
+    setSel(l[0]?.id ?? null);
+    setBorrado(`Eliminaste ${nombre}.`);
   }
 
   // Mensaje listo para mandarle al negocio por WhatsApp con sus datos de acceso.
@@ -190,6 +209,10 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
 
   const urlAlta = ed ? `${location.origin}${BASE}/alta/?n=${ed.slug}` : "";
   const sorted = [...premios].sort((a, b) => a.visitas - b.visitas);
+  // Para borrar hay que escribir el nombre guardado (no el que está a medio editar).
+  const nombreGuardado = ed ? lista.find((x) => x.id === ed.id)?.nombre ?? ed.nombre : "";
+  const nombreOk = confirmaNombre.trim().toLowerCase() === nombreGuardado.trim().toLowerCase();
+  const nClientes = ed ? socios[ed.id] : undefined;
 
   return (
     <div className="layout">
@@ -197,12 +220,13 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
         {lista.map((n) => {
           const e = ESTADO[n.estado]; const d = diasPrueba(n);
           return (
-            <button key={n.id} className="neg" aria-current={n.id === sel} onClick={() => setSel(n.id)}>
+            <button key={n.id} className="neg" aria-current={n.id === sel} onClick={() => { setSel(n.id); setBorrado(""); }}>
               <span className="row"><strong>{n.nombre}</strong><span className={"chip " + e[0]}>{e[1]}</span></span>
               <span className="muted small">{socios[n.id] === undefined ? "" : `${socios[n.id]} ${socios[n.id] === 1 ? "cliente" : "clientes"} · `}{n.estado === "prueba" ? (d > 0 ? `${d} días de prueba` : "Prueba terminada") : n.rubro || ""}</span>
             </button>);
         })}
         <button className="btn dark" onClick={nuevo}>+ Nuevo negocio</button>
+        {borrado && <div className="okmsg">{borrado}</div>}
       </section>
 
       {ed ? (<>
@@ -281,6 +305,22 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
 
           {aviso && <div className={aviso.ok ? "okmsg" : "errmsg"}>{aviso.t}</div>}
           <button className="btn" onClick={guardar}>Guardar cambios</button>
+
+          <div className="borrar">
+            {!borrando ? (
+              <button className="x" style={{ alignSelf: "flex-start", color: "var(--bad)" }} onClick={() => { setBorrando(true); setConfirmaNombre(""); setAviso(null); }}>Eliminar este negocio…</button>
+            ) : (<>
+              <h2>Eliminar {nombreGuardado}</h2>
+              <p className="small">Se borra para siempre: la tarjeta, los premios{nClientes ? `, ${nClientes === 1 ? "el cliente" : `los ${nClientes} clientes`} con sus visitas y canjes` : ""}. {nClientes ? "Sus links y QR dejan de andar. " : ""}No se puede deshacer.</p>
+              <p className="small muted">Los usuarios del negocio no se borran: solo dejan de entrar acá. Si el negocio dejó de usar Habitué y querés conservar su historial, mejor cambiá el estado a Cancelada.</p>
+              <label>Para confirmar, escribí el nombre: <strong>{nombreGuardado}</strong>
+                <input value={confirmaNombre} autoComplete="off" onChange={(e) => setConfirmaNombre(e.target.value)} /></label>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <button className="btn peligro sm" disabled={!nombreOk} onClick={eliminar}>Eliminar para siempre</button>
+                <button className="x" onClick={() => setBorrando(false)}>Cancelar</button>
+              </div>
+            </>)}
+          </div>
         </section>
 
         <aside className="prev" style={marca(ed.color)}>

@@ -3,11 +3,12 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { RequireAuth } from "@/components/Auth";
-import { Firma } from "@/components/Firma";
+import { EditorPremios, type PremioEd } from "@/components/EditorPremios";
+import { Firma, linkWhatsapp } from "@/components/Firma";
 import { BotonInstalar } from "@/components/Instalar";
 import { sb } from "@/lib/supabase";
 import { negociosDelUsuario, type NegocioUsuario } from "@/lib/negocios";
-import { BASE, marca, socio, type Negocio, type Premio } from "@/lib/util";
+import { BASE, marca, socio, type Negocio } from "@/lib/util";
 
 type Cli = { token: string; id: string; numero_socio: number; nombre: string; telefono: string | null; email: string | null; cumple: string | null; visitas: number; ultima_visita: string | null; created_at: string; resena_abierta_at: string | null };
 const DIA = 864e5;
@@ -29,7 +30,7 @@ function datosDemo() {
   });
   const visitas = Array.from({ length: 96 }, (_, i) => ({ created_at: new Date(Date.now() - ((i * 5) % 14) * DIA - (i % 5) * 36e5).toISOString() }));
   const negocio: Negocio = { id: "demo", slug: "almadekh", nombre: "Almadekh", rubro: "Restaurante", color: "#7a3e2b", espera_horas: 6, vence_dias: 60, estado: "prueba", inicio_prueba: new Date(Date.now() - 12 * DIA).toISOString().slice(0, 10), resenas_url: "https://g.page/r/ejemplo/review" };
-  const premios: Premio[] = [{ id: "a", visitas: 5, nombre: "Café de cortesía" }, { id: "b", visitas: 10, nombre: "Postre gratis" }, { id: "c", visitas: 100, nombre: "Cena para dos" }];
+  const premios: PremioEd[] = [{ id: "a", visitas: 5, nombre: "Café de cortesía", activo: true }, { id: "b", visitas: 10, nombre: "Postre gratis", activo: true }, { id: "c", visitas: 100, nombre: "Cena para dos", activo: true }];
   return { negocio, clientes, visitas, canjes: 9, premios };
 }
 
@@ -40,7 +41,7 @@ function Panel({ uid, demo = false }: { uid: string; demo?: boolean }) {
   const [esSuper, setEsSuper] = useState(false);
   const [clientes, setClientes] = useState<Cli[]>([]);
   const [total, setTotal] = useState(0);
-  const [premios, setPremios] = useState<Premio[]>([]);
+  const [premios, setPremios] = useState<PremioEd[]>([]);
   const [visitas, setVisitas] = useState<{ created_at: string }[]>([]);
   const [canjes, setCanjes] = useState(0);
   const [cargando, setCargando] = useState(false);
@@ -67,10 +68,10 @@ function Panel({ uid, demo = false }: { uid: string; demo?: boolean }) {
       sb.from("visitas").select("created_at").eq("negocio_id", negId).gte("created_at", desde).limit(5000),
       sb.from("canjes").select("id", { count: "exact", head: true }).eq("negocio_id", negId),
       sb.from("clientes").select("id", { count: "exact", head: true }).eq("negocio_id", negId),
-      sb.from("premios").select("id,visitas,nombre").eq("negocio_id", negId).eq("activo", true).order("visitas"),
+      sb.from("premios").select("id,visitas,nombre,activo").eq("negocio_id", negId).is("archivado_at", null).order("visitas"),
     ]).then(([c, v, k, t, p]) => {
       setClientes((c.data as Cli[]) ?? []); setVisitas((v.data as { created_at: string }[]) ?? []); setCanjes(k.count ?? 0);
-      setTotal(t.count ?? 0); setPremios((p.data as Premio[]) ?? []);
+      setTotal(t.count ?? 0); setPremios((p.data as PremioEd[]) ?? []);
       setCargando(false);
     });
   }, [negId, demo]);
@@ -116,6 +117,7 @@ function Panel({ uid, demo = false }: { uid: string; demo?: boolean }) {
         <div className="links">
           <Link href="/guia/">Cómo se usa</Link>
           {neg && <Link href={demo ? "/cartel/?demo=1" : `/cartel/?n=${neg.slug}`}>Cartel para el mostrador</Link>}
+          {neg && <a href={linkWhatsapp(`¡Hola, Fabrizio! Te escribo desde ${neg.nombre} por De la Casa: `)} target="_blank" rel="noopener noreferrer">Escribinos</a>}
           {esSuper && <Link href="/admin/">Administración</Link>}
         </div>
       </div>
@@ -155,10 +157,10 @@ function Panel({ uid, demo = false }: { uid: string; demo?: boolean }) {
       </section>
 
       <section className="box"><h2>Tus premios</h2>
-        <div>{premios.length ? premios.map((p) => (
-          <div className="pr" key={p.id}><span>{p.nombre}</span><span className="chip c-neutral">{p.visitas} visitas</span></div>))
-          : <p className="muted small">Todavía no hay premios cargados.</p>}</div>
-        <p className="small muted">Las visitas no se descuentan al canjear: cada premio se entrega una vez. Para cambiar o sumar un premio, escribinos por WhatsApp.</p>
+        {neg?.rol === "dueno" || esSuper || demo
+          ? <EditorPremios negocioId={negId} inicial={premios} visitasClientes={clientes.map(vigentes)} demo={demo} onGuardado={setPremios} />
+          : <div>{premios.filter((p) => p.activo).map((p) => (
+              <div className="pr" key={p.id}><span>{p.nombre}</span><span className="chip c-neutral">{p.visitas} visitas</span></div>))}</div>}
       </section>
 
       <section className="box"><h2>Cumpleaños del mes</h2>

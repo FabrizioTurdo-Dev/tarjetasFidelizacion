@@ -110,7 +110,8 @@ export default function Guia() {
           <li><b>El cliente se quiere registrar de nuevo.</b> Cada teléfono o mail tiene una sola tarjeta por negocio: reenviale el link.</li>
           <li><b>«Ya sumó una visita hace poco».</b> Es la espera entre visitas. No se sumó nada; está todo bien.</li>
           <li><b>No abre la cámara.</b> Revisá que el navegador tenga permiso de cámara (en los ajustes del celular). Mientras tanto, escribí el número de socio.</li>
-          <li><b>Quiero cambiar un premio, el color o agregar un empleado.</b> Escribinos por WhatsApp y lo cambiamos nosotros.</li>
+          <li><b>Quiero cambiar un premio.</b> Lo hacés vos desde el panel, en <b>Tus premios</b>: podés agregar, cambiar, pausar o quitar premios, y tus clientes lo ven al instante. Si un premio ya se entregó, conviene pausarlo en vez de cambiarle el nombre.</li>
+          <li><b>Quiero cambiar el color o agregar un empleado.</b> Escribinos por WhatsApp y lo cambiamos nosotros.</li>
           <li><b>Me olvidé la contraseña.</b> Escribinos y te ponemos una nueva. Para cambiarla vos, abajo de todo en el panel tocá <b>Cambiar mi contraseña</b>.</li>
           <li><b>Se fue un empleado.</b> Avisanos y le damos de baja el usuario.</li>
           <li><b>Un cliente pide que borren sus datos.</b> Avisanos y los borramos (lo pide la ley 25.326).</li>

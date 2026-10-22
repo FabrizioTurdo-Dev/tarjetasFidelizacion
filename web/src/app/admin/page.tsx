@@ -2,16 +2,19 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { RequireAuth } from "@/components/Auth";
+import { EditorPremios, type PremioEd } from "@/components/EditorPremios";
 import { Qr } from "@/components/Qr";
+import { ESTADO, Resumen, type DatosResumen } from "@/components/admin/Resumen";
+import { Solicitudes, type Solicitud } from "@/components/admin/Solicitudes";
 import { sb } from "@/lib/supabase";
-import { BASE, diasPrueba, iniciales, marca, msg, slugify, type Negocio, type Premio } from "@/lib/util";
+import { BASE, diasPrueba, iniciales, linkWa, marca, msg, slugify, type Negocio } from "@/lib/util";
 
-const ESTADO: Record<string, [string, string]> = {
-  prueba: ["c-warn", "En prueba"], activa: ["c-good", "Activa"], vencida: ["c-bad", "Vencida"],
-  suspendida: ["c-bad", "Suspendida"], cancelada: ["c-neutral", "Cancelada"],
-};
-type PremioEd = { id?: string; visitas: number; nombre: string };
 type Miembro = { user_id: string; email: string; rol: "dueno" | "empleado" };
+type Privado = { contacto_nombre: string; contacto_whatsapp: string; notas: string };
+type Cambio = { accion: string; antes: { visitas: number; nombre: string } | null; despues: { visitas: number; nombre: string } | null; usuario_email: string | null; created_at: string };
+const PRIVADO_VACIO: Privado = { contacto_nombre: "", contacto_whatsapp: "", notas: "" };
+const ACCION: Record<string, string> = { alta: "Agregó", edicion: "Cambió", pausa: "Pausó", reactivacion: "Reactivó", baja: "Quitó" };
+const SEMANAS = 8;
 
 /** Contraseña para pasarle al negocio: 10 caracteres sin los que se confunden (0/O, 1/l/I). */
 function generarClave() {
@@ -38,9 +41,9 @@ const DEMO_NEGOCIOS: Negocio[] = [
   { id: "d3", slug: "peluqueria-sol", nombre: "Peluquería Sol", rubro: "Peluquería", color: "#2f5d50", espera_horas: 24, vence_dias: 90, estado: "suspendida", inicio_prueba: hoy(-120) },
 ];
 const DEMO_PREMIOS: Record<string, PremioEd[]> = {
-  d1: [{ id: "p1", visitas: 5, nombre: "Café de cortesía" }, { id: "p2", visitas: 10, nombre: "Postre gratis" }, { id: "p3", visitas: 100, nombre: "Cena para dos" }],
-  d2: [{ id: "p4", visitas: 8, nombre: "Café gratis" }, { id: "p5", visitas: 15, nombre: "10% en la cuenta" }],
-  d3: [{ id: "p6", visitas: 6, nombre: "Lavado gratis" }],
+  d1: [{ id: "p1", visitas: 5, nombre: "Café de cortesía", activo: true }, { id: "p2", visitas: 10, nombre: "Postre gratis", activo: true }, { id: "p3", visitas: 100, nombre: "Cena para dos", activo: true }],
+  d2: [{ id: "p4", visitas: 8, nombre: "Café gratis", activo: true }, { id: "p5", visitas: 15, nombre: "10% en la cuenta", activo: true }],
+  d3: [{ id: "p6", visitas: 6, nombre: "Lavado gratis", activo: false }],
 };
 const DEMO_MIEMBROS: Record<string, Miembro[]> = {
   d1: [{ user_id: "u1", email: "dueno@almadekh.com", rol: "dueno" }, { user_id: "u2", email: "caja@almadekh.com", rol: "empleado" }],
@@ -48,6 +51,19 @@ const DEMO_MIEMBROS: Record<string, Miembro[]> = {
   d3: [],
 };
 const DEMO_SOCIOS: Record<string, number> = { d1: 24, d2: 87, d3: 12 };
+const DEMO_RESUMEN: DatosResumen = {
+  clientes_total: 123, clientes_30: 31, visitas_30: 402, canjes_30: 37, solicitudes_nuevas: 1,
+  negocios: DEMO_NEGOCIOS.map((n, i) => ({
+    ...n, rubro: n.rubro, clientes: DEMO_SOCIOS[n.id], clientes_30: [9, 22, 0][i], visitas_30: [118, 284, 0][i], canjes_30: [11, 26, 0][i],
+    ultima_visita: i === 2 ? new Date(Date.now() - 40 * 864e5).toISOString() : new Date(Date.now() - i * 864e5).toISOString(),
+    premios: DEMO_PREMIOS[n.id].map(({ visitas, nombre, activo }) => ({ visitas, nombre, activo })),
+    ultimo_cambio: i === 0 ? { fecha: new Date(Date.now() - 3 * 864e5).toISOString(), email: "dueno@almadekh.com", accion: "edicion" } : null,
+    contacto_nombre: ["Ana", "Pablo", null][i], contacto_whatsapp: ["11 2345 6789", "11 3456 7890", null][i],
+  })),
+};
+const DEMO_SOLICITUDES: Solicitud[] = [
+  { id: "s1", created_at: new Date(Date.now() - 2 * 36e5).toISOString(), negocio: "Panadería La Espiga", rubro: "Panadería", ciudad: "Escobar", pais: "Argentina", nombre: "Marta", whatsapp: "11 4567 8901", email: null, como_nos_conocio: "Vi la tarjeta en Almadekh", estado: "nueva", negocio_id: null },
+];
 
 function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
   const [esSuper, setEsSuper] = useState<boolean | null>(null);
@@ -69,6 +85,12 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
   const [borrando, setBorrando] = useState(false);
   const [confirmaNombre, setConfirmaNombre] = useState("");
   const [borrado, setBorrado] = useState("");
+  const [vista, setVista] = useState<"resumen" | "negocios" | "solicitudes">("resumen");
+  const [resumen, setResumen] = useState<DatosResumen | null>(null);
+  const [solicitudes, setSolicitudes] = useState<Solicitud[] | null>(null);
+  const [priv, setPriv] = useState<Privado>(PRIVADO_VACIO);
+  const [cambios, setCambios] = useState<Cambio[] | null>(null);
+  const [semanas, setSemanas] = useState<number[]>([]);
 
   const cargarLista = useCallback(async () => {
     const { data } = await sb.from("negocios").select("*").order("created_at");
@@ -80,13 +102,26 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
     return l;
   }, []);
 
+  const cargarResumen = useCallback(async () => {
+    const { data, error } = await sb.rpc("resumen_admin");
+    if (!error) setResumen(data as DatosResumen);
+  }, []);
+  const cargarSolicitudes = useCallback(async () => {
+    const { data } = await sb.from("solicitudes").select("id,created_at,negocio,rubro,ciudad,pais,nombre,whatsapp,email,como_nos_conocio,estado,negocio_id").order("created_at", { ascending: false }).limit(300);
+    setSolicitudes((data as Solicitud[]) ?? []);
+  }, []);
+  const cargarCambios = useCallback((id: string) => {
+    sb.from("premios_cambios").select("accion,antes,despues,usuario_email,created_at").eq("negocio_id", id).order("created_at", { ascending: false }).limit(20)
+      .then(({ data }) => setCambios((data as Cambio[]) ?? []));
+  }, []);
+
   useEffect(() => {
-    if (demo) { setEsSuper(true); setLista(DEMO_NEGOCIOS); setSocios(DEMO_SOCIOS); setSel("d1"); return; }
+    if (demo) { setEsSuper(true); setLista(DEMO_NEGOCIOS); setSocios(DEMO_SOCIOS); setSel("d1"); setResumen(DEMO_RESUMEN); setSolicitudes(DEMO_SOLICITUDES); return; }
     sb.from("perfiles").select("es_superadmin").eq("id", uid).maybeSingle().then(({ data }) => {
       setEsSuper(!!data?.es_superadmin);
-      if (data?.es_superadmin) cargarLista().then((l) => l[0] && setSel(l[0].id));
+      if (data?.es_superadmin) { cargarLista().then((l) => l[0] && setSel(l[0].id)); cargarResumen(); cargarSolicitudes(); }
     });
-  }, [cargarLista, uid, demo]);
+  }, [cargarLista, cargarResumen, cargarSolicitudes, uid, demo]);
 
   useEffect(() => {
     const n = lista.find((x) => x.id === sel) ?? null;
@@ -95,12 +130,33 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
     setMiembros(null);
     setAvisoU(null); setAcceso(""); setCambiando(null);
     setBorrando(false); setConfirmaNombre("");
+    setPriv(PRIVADO_VACIO); setCambios(null); setSemanas([]);
     if (!n) return;
-    if (demo) { setPremios(DEMO_PREMIOS[n.id] ?? []); setMiembros(DEMO_MIEMBROS[n.id] ?? []); return; }
-    sb.from("premios").select("id,visitas,nombre").eq("negocio_id", n.id).eq("activo", true).order("visitas")
+    if (demo) {
+      setPremios(DEMO_PREMIOS[n.id] ?? []); setMiembros(DEMO_MIEMBROS[n.id] ?? []);
+      const f = DEMO_RESUMEN.negocios.find((x) => x.id === n.id);
+      setPriv({ contacto_nombre: f?.contacto_nombre ?? "", contacto_whatsapp: f?.contacto_whatsapp ?? "", notas: "" });
+      setCambios(n.id === "d1" ? [{ accion: "edicion", antes: { visitas: 8, nombre: "Postre gratis" }, despues: { visitas: 10, nombre: "Postre gratis" }, usuario_email: "dueno@almadekh.com", created_at: new Date(Date.now() - 3 * 864e5).toISOString() }] : []);
+      setSemanas(n.id === "d3" ? Array(SEMANAS).fill(0) : [22, 31, 27, 35, 30, 41, 38, 29]);
+      return;
+    }
+    sb.from("premios").select("id,visitas,nombre,activo").eq("negocio_id", n.id).is("archivado_at", null).order("visitas")
       .then(({ data }) => setPremios((data as PremioEd[]) ?? []));
+    sb.from("negocios_privado").select("contacto_nombre,contacto_whatsapp,notas").eq("negocio_id", n.id).maybeSingle()
+      .then(({ data }) => setPriv({ contacto_nombre: data?.contacto_nombre ?? "", contacto_whatsapp: data?.contacto_whatsapp ?? "", notas: data?.notas ?? "" }));
+    cargarCambios(n.id);
+    // Visitas por semana (la última es la que termina hoy).
+    sb.from("visitas").select("created_at").eq("negocio_id", n.id).gte("created_at", new Date(Date.now() - SEMANAS * 7 * 864e5).toISOString()).limit(20000)
+      .then(({ data }) => {
+        const s = Array(SEMANAS).fill(0);
+        for (const v of (data as { created_at: string }[]) ?? []) {
+          const i = SEMANAS - 1 - Math.floor((Date.now() - new Date(v.created_at).getTime()) / (7 * 864e5));
+          if (i >= 0) s[i]++;
+        }
+        setSemanas(s);
+      });
     sb.rpc("listar_miembros", { p_negocio: n.id }).then(({ data, error }) => setMiembros(error ? [] : (data as Miembro[])));
-  }, [sel, lista, demo]);
+  }, [sel, lista, demo, cargarCambios]);
 
   if (esSuper === null) return <p className="muted">Cargando…</p>;
   if (!esSuper) return <div className="aviso">Esta cuenta no es de superadmin.</div>;
@@ -122,28 +178,19 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
     if (!ed) return;
     if (demo) return soloDemo();
     if (!ed.nombre.trim()) { setAviso({ ok: false, t: "Falta el nombre del negocio." }); return; }
-    if (premios.some((p) => !p.nombre.trim() || p.visitas < 1)) { setAviso({ ok: false, t: "Completá nombre y visitas de cada premio, o quitá los que sobran." }); return; }
-    if (new Set(premios.map((p) => p.visitas)).size !== premios.length) { setAviso({ ok: false, t: "Dos premios no pueden pedir la misma cantidad de visitas." }); return; }
     const resenas_url = ed.resenas_url?.trim() || null;
     if (resenas_url && !/^https:\/\/\S+$/.test(resenas_url)) { setAviso({ ok: false, t: "El link de reseñas tiene que empezar con https:// y no llevar espacios." }); return; }
     const { id, slug, nombre, rubro, color, espera_horas, vence_dias, estado, inicio_prueba } = ed;
     const r = await sb.from("negocios").update({ slug: slugify(slug), nombre: nombre.trim(), rubro, color, espera_horas, vence_dias, estado, inicio_prueba, resenas_url }).eq("id", id);
     if (r.error) { setAviso({ ok: false, t: msg(r.error) }); return; }
 
-    // Premios: los que ya no están se borran (o se desactivan si ya se canjearon); el resto se guarda.
-    const { data: viejos } = await sb.from("premios").select("id").eq("negocio_id", id).eq("activo", true);
-    const quedan = new Set(premios.filter((p) => p.id).map((p) => p.id));
-    for (const v of (viejos as { id: string }[]) ?? []) {
-      if (quedan.has(v.id)) continue;
-      const d = await sb.from("premios").delete().eq("id", v.id);
-      if (d.error) await sb.from("premios").update({ activo: false, visitas: 100000 + Math.floor(Math.random() * 1e6) }).eq("id", v.id);
-    }
-    for (const p of premios) {
-      const res = p.id
-        ? await sb.from("premios").update({ visitas: p.visitas, nombre: p.nombre.trim() }).eq("id", p.id)
-        : await sb.from("premios").insert({ negocio_id: id, visitas: p.visitas, nombre: p.nombre.trim() });
-      if (res.error) { setAviso({ ok: false, t: msg(res.error) }); return; }
-    }
+    // Contacto del dueño: solo lo ve el superadmin (los premios se guardan aparte, con su botón).
+    const pr = await sb.from("negocios_privado").upsert({
+      negocio_id: id, contacto_nombre: priv.contacto_nombre.trim() || null, contacto_whatsapp: priv.contacto_whatsapp.trim() || null,
+      notas: priv.notas.trim() || null, updated_at: new Date().toISOString(),
+    });
+    if (pr.error) { setAviso({ ok: false, t: msg(pr.error) }); return; }
+    cargarResumen();
     const l = await cargarLista();
     if (!l.find((x) => x.id === id)) setSel(l[0]?.id ?? null);
     setAviso({ ok: true, t: "Guardado." });
@@ -160,6 +207,7 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
     if (!data?.length) { setAviso({ ok: false, t: "No se pudo eliminar. Cerrá sesión, volvé a entrar y probá de nuevo." }); return; }
     const l = await cargarLista();
     setSel(l[0]?.id ?? null);
+    cargarResumen();
     setBorrado(`Eliminaste ${nombre}.`);
   }
 
@@ -210,13 +258,28 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
   }
 
   const urlAlta = ed ? `${location.origin}${BASE}/alta/?n=${ed.slug}` : "";
-  const sorted = [...premios].sort((a, b) => a.visitas - b.visitas);
+  const sorted = premios.filter((p) => p.activo).sort((a, b) => a.visitas - b.visitas);
+  const maxSemana = Math.max(1, ...semanas);
+  const fecha = (s: string) => new Date(s).toLocaleDateString("es-AR");
   // Para borrar hay que escribir el nombre guardado (no el que está a medio editar).
   const nombreGuardado = ed ? lista.find((x) => x.id === ed.id)?.nombre ?? ed.nombre : "";
   const nombreOk = confirmaNombre.trim().toLowerCase() === nombreGuardado.trim().toLowerCase();
   const nClientes = ed ? socios[ed.id] : undefined;
 
-  return (
+  const abrir = (id: string) => { setSel(id); setBorrado(""); setVista("negocios"); };
+  const pestanas = (
+    <div className="links" role="tablist">
+      {([["resumen", "Resumen"], ["negocios", "Negocios"], ["solicitudes", `Solicitudes${resumen?.solicitudes_nuevas ? ` (${resumen.solicitudes_nuevas})` : ""}`]] as const).map(([k, t]) => (
+        <button key={k} role="tab" aria-selected={vista === k} className={"tab" + (vista === k ? " on" : "")} onClick={() => setVista(k)}>{t}</button>))}
+    </div>);
+
+  if (vista === "resumen") return (<>{pestanas}<Resumen datos={resumen} onAbrir={abrir} onSolicitudes={() => setVista("solicitudes")} /></>);
+  if (vista === "solicitudes") return (<>{pestanas}<Solicitudes lista={solicitudes} demo={demo}
+    onCambio={() => { cargarSolicitudes(); cargarResumen(); }}
+    onCreado={(id) => { cargarLista().then(() => abrir(id)); }} /></>);
+
+  return (<>
+    {pestanas}
     <div className="layout">
       <section style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {lista.map((n) => {
@@ -256,18 +319,21 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
           <label>Link de reseñas de Google (opcional)<input type="url" value={ed.resenas_url ?? ""} onChange={(e) => set("resenas_url", e.target.value)} placeholder="https://g.page/r/…/review" /></label>
           <p className="small muted" style={{ marginTop: -6 }}>El dueño lo saca de su Perfil de Empresa de Google → <b>Pedir reseñas</b>. Con el link cargado, la tarjeta le ofrece al cliente dejar su reseña a partir de la 2ª visita, una sola vez y sin nada a cambio.</p>
 
-          <div><h2 style={{ marginBottom: 8 }}>Premios</h2>
-            <p className="small muted" style={{ marginBottom: 8 }}>Las visitas son acumuladas: canjear un premio no las descuenta.</p>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {premios.map((p, i) => (
-                <div className="prem" key={i}>
-                  <label>Visitas<input type="number" min={1} value={p.visitas} onChange={(e) => setPremios(premios.map((x, j) => j === i ? { ...x, visitas: parseInt(e.target.value) || 0 } : x))} /></label>
-                  <label>Premio<input value={p.nombre} placeholder="Café con medialuna" onChange={(e) => setPremios(premios.map((x, j) => j === i ? { ...x, nombre: e.target.value } : x))} /></label>
-                  <button className="x" aria-label="Quitar premio" onClick={() => setPremios(premios.filter((_, j) => j !== i))}>✕</button>
-                </div>))}
-              {!premios.length && <p className="muted small">Sin premios todavía.</p>}
+          <div><h2 style={{ marginBottom: 4 }}>Contacto del dueño</h2>
+            <p className="small muted" style={{ marginBottom: 8 }}>Solo lo ves vos. Se guarda con "Guardar cambios".</p>
+            <div className="row2">
+              <label>Nombre<input value={priv.contacto_nombre} maxLength={80} onChange={(e) => setPriv({ ...priv, contacto_nombre: e.target.value })} /></label>
+              <label>WhatsApp<input value={priv.contacto_whatsapp} maxLength={30} inputMode="tel" placeholder="11 2345 6789" onChange={(e) => setPriv({ ...priv, contacto_whatsapp: e.target.value })} /></label>
             </div>
-            <button className="btn ghost sm" style={{ marginTop: 8 }} onClick={() => setPremios([...premios, { visitas: Math.max(0, ...premios.map((p) => p.visitas)) + 5, nombre: "" }])}>+ Agregar premio</button>
+            <label style={{ marginTop: 8 }}>Notas (cobros, acuerdos)<textarea rows={3} maxLength={2000} value={priv.notas} onChange={(e) => setPriv({ ...priv, notas: e.target.value })} /></label>
+            {priv.contacto_whatsapp.trim() && <a className="btn ghost sm" style={{ marginTop: 8 }} href={linkWa(priv.contacto_whatsapp, `¡Hola${priv.contacto_nombre ? " " + priv.contacto_nombre.trim() : ""}! Soy Fabrizio, de De la Casa. `)} target="_blank" rel="noopener noreferrer">Escribirle por WhatsApp</a>}
+          </div>
+
+          <div><h2 style={{ marginBottom: 8 }}>Visitas por semana</h2>
+            <div style={{ display: "flex", alignItems: "flex-end", gap: 6, height: 70 }}>
+              {semanas.map((n, i) => <div key={i} title={`${n} visitas`} style={{ flex: 1, background: "var(--ink)", opacity: .8, borderRadius: 3, height: Math.max(3, (n / maxSemana) * 70) }} />)}
+            </div>
+            <div className="bar-l muted" style={{ opacity: 1 }}><span>hace {SEMANAS} semanas</span><span>esta semana: {semanas[SEMANAS - 1] ?? 0}</span></div>
           </div>
 
           <div><h2 style={{ marginBottom: 4 }}>Usuarios del negocio</h2>
@@ -310,6 +376,21 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
           {aviso && <div className={aviso.ok ? "okmsg" : "errmsg"}>{aviso.t}</div>}
           <button className="btn" onClick={guardar}>Guardar cambios</button>
 
+          <div style={{ borderTop: "1px solid var(--line)", paddingTop: 12 }}><h2 style={{ marginBottom: 4 }}>Premios</h2>
+            <p className="small muted" style={{ marginBottom: 8 }}>El dueño también los puede cambiar desde su panel. Se guardan con su propio botón.</p>
+            <EditorPremios negocioId={ed.id} inicial={premios} demo={demo} onGuardado={(p) => { setPremios(p); cargarResumen(); cargarCambios(ed.id); }} />
+          </div>
+
+          <div><h2 style={{ marginBottom: 8 }}>Historial de premios</h2>
+            {cambios === null ? <p className="muted small">Cargando…</p> : cambios.length ? cambios.map((c, i) => (
+              <div className="pr small" key={i}>
+                <span>{ACCION[c.accion] ?? c.accion} {c.antes && c.despues
+                  ? <>«{c.antes.nombre}» ({c.antes.visitas}) → «{c.despues.nombre}» ({c.despues.visitas})</>
+                  : <>«{(c.despues ?? c.antes)?.nombre}» ({(c.despues ?? c.antes)?.visitas} visitas)</>}</span>
+                <span className="muted" style={{ textAlign: "right" }}>{fecha(c.created_at)}<br />{c.usuario_email}</span>
+              </div>)) : <p className="muted small">Sin cambios registrados todavía.</p>}
+          </div>
+
           <div className="borrar">
             {!borrando ? (
               <button className="x" style={{ alignSelf: "flex-start", color: "var(--bad)" }} onClick={() => { setBorrando(true); setConfirmaNombre(""); setAviso(null); }}>Eliminar este negocio…</button>
@@ -343,7 +424,7 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
         </aside>
       </>) : <p className="muted">Elegí un negocio o creá uno nuevo.</p>}
     </div>
-  );
+  </>);
 }
 
 export default function Page() {

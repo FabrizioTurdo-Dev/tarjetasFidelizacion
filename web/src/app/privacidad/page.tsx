@@ -34,6 +34,9 @@ export default function Privacidad() {
       <p>Podés pedir en cualquier momento ver tus datos, corregirlos o que los borremos, escribiendo a devfabri@gmail.com o pidiéndoselo al comercio. El acceso es gratuito a intervalos no inferiores a seis meses, salvo que acredites un interés legítimo.</p>
       <p className="small muted">La AGENCIA DE ACCESO A LA INFORMACIÓN PÚBLICA, en su carácter de Órgano de Control de la Ley N° 25.326, tiene la atribución de atender las denuncias y reclamos que interpongan quienes resulten afectados en sus derechos por incumplimiento de las normas vigentes en materia de protección de datos personales.</p>
 
+      <h2>Si pediste la prueba para tu negocio</h2>
+      <p>Guardamos el nombre del negocio, el rubro, la ciudad, tu nombre, tu WhatsApp y, si lo dejaste, tu mail, solo para contactarte por la prueba y darte soporte. Los ve únicamente el equipo de la plataforma. Si no seguís, podés pedir que los borremos escribiendo a devfabri@gmail.com.</p>
+
       <h2>Tu tarjeta es privada</h2>
       <p>Tu tarjeta se abre con un link secreto. Quien tenga el link puede ver tus visitas, así que no lo compartas. Si lo perdés, pedile al comercio que te lo reenvíe.</p>
       <Firma />

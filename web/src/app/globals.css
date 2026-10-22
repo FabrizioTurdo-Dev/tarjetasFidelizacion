@@ -135,3 +135,18 @@ table{border-collapse:collapse;width:100%;font-size:14px} th,td{text-align:left;
   .cartel{width:210mm;height:296mm;aspect-ratio:auto;border-radius:0;box-shadow:none} /* 1 mm menos: que no salte a una segunda hoja */
 }
 .firma{text-align:center;margin:8px 0 0} .firma a{color:inherit;font-weight:600}
+.tab{font:600 13px var(--body);border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 14px;cursor:pointer}
+.tab.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+textarea{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:11px 12px;resize:vertical}
+/* ---- Página pública ---- */
+.landing{max-width:560px}
+.marca-dlc{font:700 20px var(--display)}
+.hero-l{display:flex;flex-direction:column;gap:12px;padding:12px 0 4px}
+.hero-l h1{font-size:32px}
+.pasos{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px}
+details{border-top:1px solid var(--line);padding:10px 0}
+details:first-of-type{border-top:0}
+summary{cursor:pointer;font-weight:600}
+details p{margin-top:6px}
+.trampa{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+.layout>*{min-width:0} .prem input{min-width:0;width:100%}

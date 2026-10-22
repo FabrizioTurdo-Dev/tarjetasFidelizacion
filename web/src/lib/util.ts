@@ -24,6 +24,12 @@ const ERRORES: Record<string, string> = {
   reauthentication_needed: "Por seguridad, cerrá sesión, volvé a entrar y probá de nuevo.",
   es_superadmin: "La contraseña del superadmin no se cambia desde acá.",
   pedido_invalido: "Faltan datos para hacer eso.",
+  premio_visitas: "Cada premio tiene que pedir entre 1 y 500 visitas.",
+  premio_nombre: "Cada premio necesita un nombre (hasta 80 letras).",
+  premios_demasiados: "Podés tener hasta 10 premios activos.",
+  premios_repetidos: "Dos premios no pueden pedir la misma cantidad de visitas.",
+  whatsapp_invalido: "Revisá el WhatsApp: escribilo con la característica, por ejemplo 11 2345 6789.",
+  demasiados_pedidos: "Ya recibimos tu pedido. Te escribimos por WhatsApp en el día.",
   "Invalid login credentials": "Mail o contraseña incorrectos.",
 };
 
@@ -86,3 +92,13 @@ export const diasPrueba = (n: Pick<Negocio, "inicio_prueba">) => {
   fin.setDate(fin.getDate() + 30);
   return Math.ceil((fin.getTime() - Date.now()) / 864e5);
 };
+
+/** Link de WhatsApp a un número escrito a mano. Sin código de país se asume Argentina (54 9 + característica). */
+export function linkWa(numero: string, texto: string): string {
+  let d = (numero || "").replace(/\D/g, "");
+  if (!numero.trim().startsWith("+") && !d.startsWith("54")) {
+    d = d.replace(/^0/, "");
+    if (d.length === 10) d = "549" + d;
+  }
+  return `https://wa.me/${d}?text=${encodeURIComponent(texto)}`;
+}

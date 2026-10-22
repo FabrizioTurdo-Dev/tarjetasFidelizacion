@@ -132,7 +132,7 @@ function Tarjeta() {
           {puedeEnviar && <button className="btn ghost" onClick={enviar}>Enviar…</button>}
         </div>
       </section>
-      <p className="muted small" style={{ textAlign: "center" }}>Funciona con De la Casa · <Link href="/mis-tarjetas/">Mis tarjetas</Link></p>
+      <p className="muted small" style={{ textAlign: "center" }}>Funciona con <Link href="/">De la Casa</Link> · <Link href="/mis-tarjetas/">Mis tarjetas</Link></p>
       <Firma mensaje={`¡Hola, Fabrizio! Vi la tarjeta de ${c.negocio.nombre} en De la Casa y quiero una para mi negocio.`} />
 
       {tuto && (

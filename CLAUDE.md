@@ -8,24 +8,24 @@ SaaS de tarjeta de fidelización (cliente frecuente) virtual para comercios y se
 El cliente final la tiene en el celular sin descargar apps; el negocio la administra desde un panel web
 (PWA) y paga una suscripción mensual.
 
-- Nombre: a definir entre **Habitué** y **De la Casa**.
+- Nombre: **De la Casa**, dominio **delacasa.com.ar** (comprado en DomWeb). Decidido 22/10/2026; la app todavía dice "Habitué" hasta hacer el cambio.
 - Idioma de la interfaz: español rioplatense (voseo).
-- Documentos detallados: `docs/plan-mvp.md` y `docs/propuesta-comercios.md`.
+- Documentos detallados: `docs/plan-mvp.md`, `docs/propuesta-comercios.md` y `docs/plan-lanzamiento.md` (plan vigente: dominio, premios editables, superadmin, página pública, cobro).
 
 ## Decisiones tomadas (19/10/2026)
 | Tema | Decisión |
 | --- | --- |
 | Programa | Solo por visitas. Puntos por monto: versión 2 |
-| Premios | Escalera por negocio (ej. 10 visitas: café, 20: torta, 100: cena). Visitas acumuladas: canjear NO las descuenta; cada premio se canjea una vez. Los carga el superadmin (el dueño los edita en v2/v3). Visitas como moneda: con puntos, v2 |
+| Premios | Escalera por negocio (ej. 10 visitas: café, 20: torta, 100: cena). Visitas acumuladas: canjear NO las descuenta; cada premio se canjea una vez. El dueño los edita desde su panel (se adelantó, 22/10/2026): no se borra uno ya canjeado, se pausa; cada cambio queda en un historial que ve el superadmin. El superadmin sigue pudiendo editar todo. Visitas como moneda: con puntos, v2 |
 | Período de espera entre visitas | 6 horas (configurable por negocio) |
 | Vencimiento | Por inactividad: si pasan 60 días sin visitas, el contador se reinicia y la visita nueva cuenta como 1. Cada visita reinicia el plazo de 60 días |
 | Aviso de vencimiento | La tarjeta muestra cuándo vencen las visitas. Recordatorio 7 días antes: versión 2 (decidido 20/10/2026) |
 | Reseñas en Google | Botón en la tarjeta desde la 2ª visita, una sola vez, a todos por igual. Nunca a cambio de nada ni con texto prearmado (reglas de Google). El link lo carga el superadmin. Volver a pedirla a las 50 visitas: más adelante (decidido 21/10/2026) |
-| Android | Google Wallet (cuenta de emisor gratis; arranca en modo demo) |
+| Android | Google Wallet (cuenta de emisor gratis; arranca en modo demo). **En pausa** hasta tener ingresos (22/10/2026); mientras tanto, tarjeta web |
 | iPhone | Tarjeta web con link secreto, guardada en la pantalla de inicio. Tutorial automático al abrirla desde iPhone (Compartir → Agregar a inicio). Apple Wallet con cuenta propia en versión 2 |
-| Alta de negocios | Manual, la hace el superadmin con los datos que pasa el negocio |
+| Alta de negocios | El negocio pide la prueba en el formulario público (WhatsApp obligatorio); Fabri lo contacta y lo crea desde Administración (22/10/2026). Alta 100% autoservicio: más adelante |
 | Prueba gratis | 30 días desde el alta |
-| Cobro en el MVP | Manual (transferencia o link de pago). Mercado Pago automático: versión 2 |
+| Cobro en el MVP | Primero link de suscripción de Mercado Pago creado a mano; después suscripciones automáticas con webhook (ver `docs/plan-lanzamiento.md`) |
 | Tecnología | Next.js + Supabase (Auth, Postgres con RLS) |
 | Pilotos | almadekh (restaurante); buscar 2 más de otros rubros |
 

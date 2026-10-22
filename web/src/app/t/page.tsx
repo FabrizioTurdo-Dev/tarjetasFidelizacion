@@ -3,6 +3,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { sb } from "@/lib/supabase";
 import { BASE, esIos, iniciales, marca, msg, socio, type EstadoCliente } from "@/lib/util";
+import { Firma } from "@/components/Firma";
 import { Qr } from "@/components/Qr";
 import { BotonInstalar, ManifestCliente } from "@/components/Instalar";
 import { agregarToken, tokensGuardados } from "@/lib/tarjetas";
@@ -131,7 +132,8 @@ function Tarjeta() {
           {puedeEnviar && <button className="btn ghost" onClick={enviar}>Enviar…</button>}
         </div>
       </section>
-      <p className="muted small" style={{ textAlign: "center" }}>Funciona con Habitué · <Link href="/mis-tarjetas/">Mis tarjetas</Link></p>
+      <p className="muted small" style={{ textAlign: "center" }}>Funciona con De la Casa · <Link href="/mis-tarjetas/">Mis tarjetas</Link></p>
+      <Firma mensaje={`¡Hola, Fabrizio! Vi la tarjeta de ${c.negocio.nombre} en De la Casa y quiero una para mi negocio.`} />
 
       {tuto && (
         <div className="sheet" role="dialog" aria-labelledby="tuto-t">
@@ -140,7 +142,7 @@ function Tarjeta() {
           <ol className="steps">
             <li><span>Tocá <b>Compartir</b> en la barra de Safari, abajo.</span></li>
             <li><span>Bajá y tocá <b>Agregar a inicio</b>.</span></li>
-            <li><span>Tocá <b>Agregar</b>. Vas a ver el ícono de Habitué en tu pantalla: abre directo tu tarjeta de {c.negocio.nombre}.</span></li>
+            <li><span>Tocá <b>Agregar</b>. Vas a ver el ícono De la Casa en tu pantalla: abre directo tu tarjeta de {c.negocio.nombre}.</span></li>
           </ol>
           <button className="btn" onClick={() => setTuto(false)}>Entendido</button>
         </div>

@@ -1,14 +1,15 @@
 import Link from "next/link";
+import { Firma, linkWhatsapp } from "@/components/Firma";
 
 // Guía para el negocio (dueño y empleados). Sin login: se puede mandar el link por WhatsApp o imprimir.
-export const metadata = { title: "Cómo se usa · Habitué" };
+export const metadata = { title: "Cómo se usa · De la Casa" };
 
 export default function Guia() {
   return (
     <main className="screen guia">
       <div className="links noprint"><Link href="/panel/">← Volver al panel</Link></div>
       <div>
-        <h1>Cómo se usa Habitué</h1>
+        <h1>Cómo se usa De la Casa</h1>
         <p className="muted" style={{ marginTop: 6 }}>Guía para el negocio. Leela una vez y tenela a mano: se lee en 5 minutos.</p>
       </div>
       <nav className="noprint" aria-label="Secciones">
@@ -18,23 +19,23 @@ export default function Guia() {
 
       <section className="box">
         <h2>Qué es</h2>
-        <p>Habitué es la tarjeta de cliente frecuente de tu negocio, en el celular de tus clientes. Ellos no descargan nada. Vos marcás cada visita escaneando su tarjeta y, cuando llegan a la meta, les das el premio.</p>
+        <p>De la Casa es la tarjeta de cliente frecuente de tu negocio, en el celular de tus clientes. Ellos no descargan nada. Vos marcás cada visita escaneando su tarjeta y, cuando llegan a la meta, les das el premio.</p>
         <p>Antes de arrancar te dejamos listo: tu tarjeta (nombre, color y premios), tu usuario con mail y contraseña, y el QR para el mostrador.</p>
       </section>
 
       <section className="box" id="instalar">
-        <h2>1. Instalá Habitué en el celular del local</h2>
+        <h2>1. Instalá De la Casa en el celular del local</h2>
         <p><b>Android (Chrome):</b></p>
         <ol>
           <li>Abrí en Chrome el link que te pasamos e ingresá con tu mail y contraseña.</li>
-          <li>Tocá <b>Instalar Habitué en este celular</b>. Si no aparece, usá el menú <b>⋮</b> → <b>Instalar app</b> (o <b>Agregar a la pantalla principal</b>).</li>
-          <li>Queda el ícono <b>Habitué</b> en tu pantalla. Si lo mantenés apretado, aparece el atajo <b>Escanear</b>.</li>
+          <li>Tocá <b>Instalar De la Casa en este celular</b>. Si no aparece, usá el menú <b>⋮</b> → <b>Instalar app</b> (o <b>Agregar a la pantalla principal</b>).</li>
+          <li>Queda el ícono <b>De la Casa</b> en tu pantalla. Si lo mantenés apretado, aparece el atajo <b>Escanear</b>.</li>
         </ol>
         <p><b>iPhone (Safari):</b></p>
         <ol>
           <li>Abrí el link en Safari.</li>
           <li>Tocá <b>Compartir</b> (el cuadrado con la flecha) → <b>Agregar a inicio</b> → <b>Agregar</b>.</li>
-          <li>Abrí Habitué desde el ícono nuevo e ingresá con tu mail y contraseña (la primera vez lo pide de nuevo).</li>
+          <li>Abrí De la Casa desde el ícono nuevo e ingresá con tu mail y contraseña (la primera vez lo pide de nuevo).</li>
         </ol>
         <p className="tip">El ícono abre el panel, con el botón <b>Escanear tarjeta</b> arriba de todo. Si el usuario es de un empleado, entra directo al escáner.</p>
       </section>
@@ -53,7 +54,7 @@ export default function Guia() {
       <section className="box" id="visitas">
         <h2>3. Sumar una visita</h2>
         <ol>
-          <li>Abrí Habitué y tocá <b>Escanear tarjeta</b>.</li>
+          <li>Abrí De la Casa y tocá <b>Escanear tarjeta</b>.</li>
           <li>Apuntá la cámara al QR de la tarjeta del cliente.</li>
           <li>Listo: en pantalla ves <b>Visita sumada</b> y cuántas le faltan para el próximo premio.</li>
         </ol>
@@ -122,7 +123,8 @@ export default function Guia() {
         <p className="small muted">Tus clientes dan solo nombre y teléfono o mail, sin DNI. Los datos son de tu negocio: no los vendemos ni los compartimos.</p>
       </section>
 
-      <p className="muted small" style={{ textAlign: "center" }}>¿Dudas? Escribinos por WhatsApp.</p>
+      <p className="muted small" style={{ textAlign: "center" }}>¿Dudas? <a href={linkWhatsapp("¡Hola, Fabrizio! Te escribo por De la Casa, tengo una consulta.")} target="_blank" rel="noopener noreferrer">Escribinos por WhatsApp</a>.</p>
+      <Firma />
     </main>
   );
 }

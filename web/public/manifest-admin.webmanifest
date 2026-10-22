@@ -1,6 +1,6 @@
 {
-  "name": "Habitué · Administración",
-  "short_name": "Admin Habitué",
+  "name": "De la Casa · Administración",
+  "short_name": "Admin",
   "lang": "es-AR",
   "start_url": "./admin/",
   "scope": "./",

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { RequireAuth } from "@/components/Auth";
+import { Firma } from "@/components/Firma";
 import { BotonInstalar } from "@/components/Instalar";
 import { sb } from "@/lib/supabase";
 import { negociosDelUsuario, type NegocioUsuario } from "@/lib/negocios";
@@ -126,7 +127,7 @@ function Panel({ uid, demo = false }: { uid: string; demo?: boolean }) {
         </div>
         <Link className="btn" href="/escanear/" style={neg ? marca(neg.color) : undefined}>Escanear tarjeta</Link>
       </section>
-      <BotonInstalar texto="Instalar Habitué en este celular" className="btn ghost" />
+      <BotonInstalar texto="Instalar De la Casa en este celular" className="btn ghost" />
       <div className="kpis">
         <div className="kpi"><b>{porDia[13].n}</b><span>Visitas hoy</span></div>
         <div className="kpi"><b>{visitas.length}</b><span>Visitas (14 días)</span></div>
@@ -182,6 +183,7 @@ export default function Page() {
       {demo
         ? (<><div className="aviso">Vista demo con datos de ejemplo: así vería el panel un negocio con actividad.</div><Panel uid="" demo /></>)
         : <RequireAuth>{(s) => <Panel uid={s.user.id} />}</RequireAuth>}
+      <Firma mensaje="¡Hola, Fabrizio! Te escribo por De la Casa, tengo una consulta." />
     </main>
   );
 }

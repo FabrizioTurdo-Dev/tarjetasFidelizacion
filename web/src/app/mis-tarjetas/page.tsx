@@ -2,6 +2,7 @@
 import { Suspense, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Firma } from "@/components/Firma";
 import { sb } from "@/lib/supabase";
 import { BASE, esIos, iniciales, marca, socio, type EstadoCliente } from "@/lib/util";
 import { agregarToken, quitarToken, tokensDeTexto, tokensGuardados } from "@/lib/tarjetas";
@@ -79,7 +80,7 @@ function Mis() {
 
       {ios && !!items?.length && (
         <section className="box"><h2>Todas en un solo ícono</h2>
-          <p className="small muted">En Safari tocá <b>Compartir</b> → <b>Agregar a inicio</b> desde <b>esta</b> pantalla. Así el ícono de Habitué abre todas tus tarjetas.</p></section>
+          <p className="small muted">En Safari tocá <b>Compartir</b> → <b>Agregar a inicio</b> desde <b>esta</b> pantalla. Así el ícono De la Casa abre todas tus tarjetas.</p></section>
       )}
 
       <form className="box" onSubmit={agregar}>
@@ -91,6 +92,7 @@ function Mis() {
         {err && <div className="errmsg">{err}</div>}
         <button className="btn dark">Agregar</button>
       </form>
+      <Firma />
     </main>
   );
 }

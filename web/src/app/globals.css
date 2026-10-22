@@ -134,3 +134,4 @@ table{border-collapse:collapse;width:100%;font-size:14px} th,td{text-align:left;
   .cartel-pag{max-width:none;padding:0;margin:0}
   .cartel{width:210mm;height:296mm;aspect-ratio:auto;border-radius:0;box-shadow:none} /* 1 mm menos: que no salte a una segunda hoja */
 }
+.firma{text-align:center;margin:8px 0 0} .firma a{color:inherit;font-weight:600}

@@ -1,6 +1,6 @@
-# Plan de redes sociales — Habitué (borrador)
+# Plan de redes sociales — De la Casa (borrador)
 
-Estado: borrador para trabajar juntos. Nada de esto está publicado. Falta definir el nombre final (Habitué o De la Casa), el logo y los usuarios de las cuentas.
+Estado: borrador para trabajar juntos. Nada de esto está publicado. El nombre ya está decidido (De la Casa, delacasa.com.ar). Falta definir el logo y los usuarios de las cuentas.
 
 ## Objetivo
 Conseguir que dueños de comercios de Argentina se enteren de la tarjeta de fidelización digital y pidan una prueba gratis de 30 días. Meta inicial: **3 pilotos** (almadekh + 2 de otros rubros) y después una lista de 20 comercios interesados.

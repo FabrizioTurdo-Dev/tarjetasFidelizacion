@@ -1,6 +1,6 @@
 {
-  "name": "Habitué · Negocio",
-  "short_name": "Habitué",
+  "name": "De la Casa · Negocio",
+  "short_name": "De la Casa",
   "description": "Escanear tarjetas y ver el panel de tu negocio.",
   "lang": "es-AR",
   "start_url": "./panel/",

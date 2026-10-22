@@ -26,7 +26,7 @@ Argumento de venta: *"Sabé quiénes son tus clientes y hacelos volver, sin que 
 ## Decisiones tomadas
 | Tema | Decisión |
 | --- | --- |
-| Nombre | Entre Habitué y De la Casa |
+| Nombre | De la Casa (delacasa.com.ar), decidido 22/10/2026 |
 | Período de espera entre visitas | 6 horas |
 | Premios | Escalera de premios por negocio (ej. 10 visitas: café, 20: torta, 100: cena). Las visitas son acumuladas: canjear NO las descuenta. Cada premio se canjea una vez. Los carga el superadmin; el dueño los edita en la versión 2 o 3. Visitas como moneda (canjear descuenta): con puntos, versión 2 |
 | Vencimiento | Por inactividad: si pasan 60 días sin visitas, el contador se reinicia y la visita nueva cuenta como 1. Cada visita reinicia el plazo |

@@ -80,7 +80,7 @@ function Cartel() {
               <div>{visibles.map((p) => <span key={p.visitas}><b>{p.visitas}<small> visitas</small></b>{p.nombre}</span>)}</div>
             </section>
           )}
-          <footer>Funciona con Habitué</footer>
+          <footer>Funciona con De la Casa</footer>
         </div>
       </article>
     </main>

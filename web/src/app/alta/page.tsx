@@ -3,6 +3,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { sb } from "@/lib/supabase";
 import { BASE, iniciales, marca, msg } from "@/lib/util";
+import { Firma } from "@/components/Firma";
 
 type Pub = { nombre: string; color: string; operativo: boolean };
 
@@ -54,6 +55,7 @@ function Alta() {
         {err && <div className="errmsg">{err}</div>}
         <button className="btn" disabled={ocupado || !acepta}>Crear mi tarjeta</button>
       </form>
+      <Firma />
     </main>
   );
 }

@@ -165,7 +165,7 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
 
   // Mensaje listo para mandarle al negocio por WhatsApp con sus datos de acceso.
   const textoAcceso = (email: string, pass: string) =>
-    `¡Hola! Ya tenés tu acceso a Habitué para ${ed?.nombre}.\nEntrá desde acá: ${location.origin}${BASE}/panel/\nMail: ${email}\nContraseña: ${pass}\nCómo se usa: ${location.origin}${BASE}/guia/`;
+    `¡Hola! Ya tenés tu acceso a De la Casa para ${ed?.nombre}.\nEntrá desde acá: ${location.origin}${BASE}/panel/\nMail: ${email}\nContraseña: ${pass}\nCómo se usa: ${location.origin}${BASE}/guia/`;
 
   // Si el mail ya tiene usuario, solo se vincula. Si no, se crea con la contraseña (función "usuarios").
   async function agregar() {
@@ -316,7 +316,7 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
             ) : (<>
               <h2>Eliminar {nombreGuardado}</h2>
               <p className="small">Se borra para siempre: la tarjeta, los premios{nClientes ? `, ${nClientes === 1 ? "el cliente" : `los ${nClientes} clientes`} con sus visitas y canjes` : ""}. {nClientes ? "Sus links y QR dejan de andar. " : ""}No se puede deshacer.</p>
-              <p className="small muted">Los usuarios del negocio no se borran: solo dejan de entrar acá. Si el negocio dejó de usar Habitué y querés conservar su historial, mejor cambiá el estado a Cancelada.</p>
+              <p className="small muted">Los usuarios del negocio no se borran: solo dejan de entrar acá. Si el negocio dejó de usar De la Casa y querés conservar su historial, mejor cambiá el estado a Cancelada.</p>
               <label>Para confirmar, escribí el nombre: <strong>{nombreGuardado}</strong>
                 <input value={confirmaNombre} autoComplete="off" onChange={(e) => setConfirmaNombre(e.target.value)} /></label>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>

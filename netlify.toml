@@ -1,0 +1,18 @@
+# Netlify publica solo la app real (web/) en la raíz de delacasa.com.ar.
+# El tablero y el prototipo siguen en GitHub Pages.
+[build]
+  base = "web"
+  command = "npm ci && npm run build"
+  publish = "out"
+
+[build.environment]
+  NODE_VERSION = "22"
+  NEXT_PUBLIC_BASE_PATH = ""
+  # Export estático: no hace falta el adaptador de Next.js de Netlify.
+  NETLIFY_NEXT_PLUGIN_SKIP = "true"
+
+# Links viejos con /app/ (QR impresos, WhatsApp, íconos guardados) van a la misma ruta en la raíz.
+[[redirects]]
+  from = "/app/*"
+  to = "/:splat"
+  status = 301

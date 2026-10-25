@@ -30,6 +30,11 @@ const ERRORES: Record<string, string> = {
   premios_repetidos: "Dos premios no pueden pedir la misma cantidad de visitas.",
   whatsapp_invalido: "Revisá el WhatsApp: escribilo con la característica, por ejemplo 11 2345 6789.",
   demasiados_pedidos: "Ya recibimos tu pedido. Te escribimos por WhatsApp en el día.",
+  info_titulo: "El título puede tener hasta 60 letras.",
+  info_texto: "El texto puede tener hasta 600 letras.",
+  info_links_demasiados: "Podés poner hasta 6 links.",
+  info_link_texto: "Cada link necesita un nombre (hasta 40 letras) y una descripción de hasta 80.",
+  info_link_url: "Cada link tiene que empezar con https:// y no llevar espacios.",
   "Invalid login credentials": "Mail o contraseña incorrectos.",
 };
 
@@ -66,6 +71,10 @@ export function slugify(s: string): string {
 }
 
 export type Premio = { id: string; visitas: number; nombre: string; activo?: boolean; ganado?: boolean; canjeado?: boolean };
+/** Un link del bloque de información de la tarjeta (carta, Instagram, WhatsApp, un proyecto…). */
+export type LinkInfo = { texto: string; detalle?: string; url: string };
+export type Info = { titulo: string | null; texto: string | null; links: LinkInfo[] };
+
 export type Negocio = {
   id: string; slug: string; nombre: string; rubro: string | null; color: string;
   espera_horas: number; vence_dias: number;
@@ -73,10 +82,13 @@ export type Negocio = {
   inicio_prueba: string;
   /** Link "Pedir reseñas" de su Perfil de Empresa de Google. */
   resenas_url?: string | null;
+  /** De De la Casa (demo, el de Fabri): no cuenta en los números del resumen. */
+  interno?: boolean;
+  info_titulo?: string | null; info_texto?: string | null; info_links?: LinkInfo[];
 };
 export type EstadoCliente = {
   nombre: string; numero_socio: number; visitas: number; vence_el: string | null; vencida: boolean;
-  negocio: { nombre: string; color: string; slug: string; logo_url: string | null; resenas_url?: string | null };
+  negocio: { nombre: string; color: string; slug: string; logo_url: string | null; resenas_url?: string | null; info?: Info };
   /** Mostrar el botón de reseña (desde la 2ª visita, si el negocio tiene link y el cliente no lo usó ni lo descartó). */
   pedir_resena?: boolean;
   premios: Premio[];

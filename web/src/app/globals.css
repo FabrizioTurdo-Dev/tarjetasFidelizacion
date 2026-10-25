@@ -150,3 +150,12 @@ summary{cursor:pointer;font-weight:600}
 details p{margin-top:6px}
 .trampa{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
 .layout>*{min-width:0} .prem input{min-width:0;width:100%}
+.row2>*{min-width:0} .row2 input,.row2 select{min-width:0;width:100%}
+/* Bloque de información de la tarjeta (Sobre nosotros / links) */
+.info-texto{white-space:pre-line}
+.enlaces{display:flex;flex-direction:column;gap:8px}
+.enlace{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--line);border-radius:12px;padding:11px 14px;text-decoration:none;color:var(--ink);background:var(--surface)}
+.enlace:hover{border-color:var(--marca,var(--ink))}
+.enlace span{display:flex;flex-direction:column;gap:2px;min-width:0;overflow-wrap:anywhere}
+.enlace small{color:var(--muted);font-size:13px}
+.enlace::after{content:"→";color:var(--marca,var(--ink));font-weight:700;flex:none}

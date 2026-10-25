@@ -3,7 +3,7 @@ import { diasPrueba, linkWa, type Negocio } from "@/lib/util";
 
 // Resumen general del superadmin (función resumen_admin): totales y una fila por negocio,
 // para ver rápido quién usa la tarjeta y a quién hay que llamar.
-export type FilaResumen = Pick<Negocio, "id" | "nombre" | "slug" | "estado" | "inicio_prueba" | "rubro"> & {
+export type FilaResumen = Pick<Negocio, "id" | "nombre" | "slug" | "estado" | "inicio_prueba" | "rubro" | "interno"> & {
   clientes: number; clientes_30: number; visitas_30: number; canjes_30: number;
   ultima_visita: string | null;
   premios: { visitas: number; nombre: string; activo: boolean }[];
@@ -31,7 +31,8 @@ export function Resumen({ datos, onAbrir, onSolicitudes }: {
 }) {
   if (!datos) return <p className="muted">Cargando…</p>;
   const l = datos.negocios;
-  const cuenta = (e: string) => l.filter((n) => n.estado === e).length;
+  // Los internos (demo, el de Fabri) se listan al final pero no suman en los números.
+  const cuenta = (e: string) => l.filter((n) => n.estado === e && !n.interno).length;
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
       <div className="kpis">
@@ -56,8 +57,9 @@ export function Resumen({ datos, onAbrir, onSolicitudes }: {
                 <tr key={n.id}>
                   <td><button className="x" style={{ padding: "4px 10px", textAlign: "left" }} onClick={() => onAbrir(n.id)}><strong>{n.nombre}</strong></button>
                     <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginTop: 4 }}>
-                      <span className={"chip " + e[0]}>{e[1]}{n.estado === "prueba" ? ` · ${d > 0 ? `${d} d` : "terminó"}` : ""}</span>
-                      {(sin === null || sin > 14) && <span className="chip c-bad">Sin uso</span>}
+                      {n.interno ? <span className="chip c-neutral">Interno</span> : (<>
+                        <span className={"chip " + e[0]}>{e[1]}{n.estado === "prueba" ? ` · ${d > 0 ? `${d} d` : "terminó"}` : ""}</span>
+                        {(sin === null || sin > 14) && <span className="chip c-bad">Sin uso</span>}</>)}
                     </div></td>
                   <td>{n.clientes}{n.clientes_30 ? <span className="small muted"> (+{n.clientes_30})</span> : null}</td>
                   <td>{n.visitas_30}</td>

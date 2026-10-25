@@ -5,6 +5,7 @@ import { sb } from "@/lib/supabase";
 import { BASE, esIos, iniciales, marca, msg, socio, type EstadoCliente } from "@/lib/util";
 import { Firma } from "@/components/Firma";
 import { Qr } from "@/components/Qr";
+import { BloqueInfo } from "@/components/Info";
 import { BotonInstalar, ManifestCliente } from "@/components/Instalar";
 import { agregarToken, tokensGuardados } from "@/lib/tarjetas";
 import Link from "next/link";
@@ -34,7 +35,11 @@ function Tarjeta() {
       // Vista demo (/t/?demo=1): una tarjeta de ejemplo con 12 visitas.
       const vence = new Date(Date.now() + 47 * 864e5).toISOString();
       setC({ nombre: "Lucía", numero_socio: 42, visitas: 12, vence_el: vence, vencida: false, pedir_resena: true,
-        negocio: { nombre: "Almadekh", color: "#7a3e2b", slug: "almadekh", logo_url: null, resenas_url: "https://g.page/r/ejemplo/review" },
+        negocio: { nombre: "Almadekh", color: "#7a3e2b", slug: "almadekh", logo_url: null, resenas_url: "https://g.page/r/ejemplo/review",
+          info: { titulo: "Sobre Almadekh", texto: "Acá cada negocio cuenta quiénes son, sus horarios y qué los hace distintos.",
+            links: [{ texto: "Nuestra carta", detalle: "Platos y precios actualizados", url: "https://example.com/carta" },
+              { texto: "Instagram", detalle: "@almadekh", url: "https://instagram.com/" },
+              { texto: "Reservas por WhatsApp", url: "https://wa.me/5491100000000" }] } },
         premios: [{ id: "a", visitas: 5, nombre: "Café de cortesía", ganado: true, canjeado: true },
           { id: "b", visitas: 10, nombre: "Postre gratis", ganado: true, canjeado: false },
           { id: "c", visitas: 20, nombre: "20% en la cuenta", ganado: false, canjeado: false },
@@ -124,6 +129,7 @@ function Tarjeta() {
           </div>)) : <p className="muted small">Este negocio todavía no cargó premios.</p>}</div>
         <p className="small muted">Tus visitas siguen sumando cuando canjeás un premio. Para canjear, mostrá la tarjeta en la caja.</p>
       </section>
+      <BloqueInfo info={c.negocio.info} negocio={c.negocio.nombre} />
       <section className="box"><h2>El link de tu tarjeta</h2>
         <p className="small muted">Guardalo para vos (por ejemplo, en tu propio chat de WhatsApp o en Notas): con este link abrís tu tarjeta desde cualquier celular, aunque cambies de teléfono. No lo compartas: quien lo tenga puede ver tu tarjeta.</p>
         <p className="linkt">{qrTexto}</p>

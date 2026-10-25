@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { RequireAuth } from "@/components/Auth";
 import { EditorPremios, type PremioEd } from "@/components/EditorPremios";
+import { EditorInfo, infoDeNegocio } from "@/components/Info";
 import { Firma, linkWhatsapp } from "@/components/Firma";
 import { BotonInstalar } from "@/components/Instalar";
 import { sb } from "@/lib/supabase";
@@ -162,6 +163,12 @@ function Panel({ uid, demo = false }: { uid: string; demo?: boolean }) {
           : <div>{premios.filter((p) => p.activo).map((p) => (
               <div className="pr" key={p.id}><span>{p.nombre}</span><span className="chip c-neutral">{p.visitas} visitas</span></div>))}</div>}
       </section>
+
+      {neg && (neg.rol === "dueno" || esSuper || demo) &&
+        <section className="box"><h2>Información en la tarjeta</h2>
+            <EditorInfo key={negId} negocioId={negId} inicial={infoDeNegocio(neg)} demo={demo}
+              onGuardado={(i) => setNegocios((l) => l.map((n) => (n.id === negId ? { ...n, info_titulo: i.titulo, info_texto: i.texto, info_links: i.links } : n)))} />
+        </section>}
 
       <section className="box"><h2>Cumpleaños del mes</h2>
         {cumples.length ? <table><tbody>{cumples.map((c) => <tr key={c.id}><td>{c.nombre}</td><td>{new Date(c.cumple! + "T00:00:00").toLocaleDateString("es-AR", { day: "numeric", month: "long" })}</td></tr>)}</tbody></table> : <p className="muted small">Nadie cumple este mes (o no cargaron la fecha).</p>}

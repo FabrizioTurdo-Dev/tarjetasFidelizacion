@@ -3,11 +3,12 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { RequireAuth } from "@/components/Auth";
 import { EditorPremios, type PremioEd } from "@/components/EditorPremios";
+import { EditorInfo, infoDeNegocio } from "@/components/Info";
 import { Qr } from "@/components/Qr";
 import { ESTADO, Resumen, type DatosResumen } from "@/components/admin/Resumen";
 import { Solicitudes, type Solicitud } from "@/components/admin/Solicitudes";
 import { sb } from "@/lib/supabase";
-import { BASE, diasPrueba, iniciales, linkWa, marca, msg, slugify, type Negocio } from "@/lib/util";
+import { BASE, diasPrueba, iniciales, linkWa, marca, msg, slugify, type Info, type Negocio } from "@/lib/util";
 
 type Miembro = { user_id: string; email: string; rol: "dueno" | "empleado" };
 type Privado = { contacto_nombre: string; contacto_whatsapp: string; notas: string };
@@ -91,6 +92,7 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
   const [priv, setPriv] = useState<Privado>(PRIVADO_VACIO);
   const [cambios, setCambios] = useState<Cambio[] | null>(null);
   const [semanas, setSemanas] = useState<number[]>([]);
+  const [info, setInfo] = useState<Info | null>(null);
 
   const cargarLista = useCallback(async () => {
     const { data } = await sb.from("negocios").select("*").order("created_at");
@@ -130,7 +132,7 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
     setMiembros(null);
     setAvisoU(null); setAcceso(""); setCambiando(null);
     setBorrando(false); setConfirmaNombre("");
-    setPriv(PRIVADO_VACIO); setCambios(null); setSemanas([]);
+    setPriv(PRIVADO_VACIO); setCambios(null); setSemanas([]); setInfo(null);
     if (!n) return;
     if (demo) {
       setPremios(DEMO_PREMIOS[n.id] ?? []); setMiembros(DEMO_MIEMBROS[n.id] ?? []);
@@ -138,12 +140,16 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
       setPriv({ contacto_nombre: f?.contacto_nombre ?? "", contacto_whatsapp: f?.contacto_whatsapp ?? "", notas: "" });
       setCambios(n.id === "d1" ? [{ accion: "edicion", antes: { visitas: 8, nombre: "Postre gratis" }, despues: { visitas: 10, nombre: "Postre gratis" }, usuario_email: "dueno@almadekh.com", created_at: new Date(Date.now() - 3 * 864e5).toISOString() }] : []);
       setSemanas(n.id === "d3" ? Array(SEMANAS).fill(0) : [22, 31, 27, 35, 30, 41, 38, 29]);
+      setInfo(infoDeNegocio(n));
       return;
     }
     sb.from("premios").select("id,visitas,nombre,activo").eq("negocio_id", n.id).is("archivado_at", null).order("visitas")
       .then(({ data }) => setPremios((data as PremioEd[]) ?? []));
     sb.from("negocios_privado").select("contacto_nombre,contacto_whatsapp,notas").eq("negocio_id", n.id).maybeSingle()
       .then(({ data }) => setPriv({ contacto_nombre: data?.contacto_nombre ?? "", contacto_whatsapp: data?.contacto_whatsapp ?? "", notas: data?.notas ?? "" }));
+    // El bloque de información se lee aparte (como los premios): se guarda con su propio botón.
+    sb.from("negocios").select("info_titulo,info_texto,info_links").eq("id", n.id).maybeSingle()
+      .then(({ data }) => setInfo(infoDeNegocio(data ?? {})));
     cargarCambios(n.id);
     // Visitas por semana (la última es la que termina hoy).
     sb.from("visitas").select("created_at").eq("negocio_id", n.id).gte("created_at", new Date(Date.now() - SEMANAS * 7 * 864e5).toISOString()).limit(20000)
@@ -180,8 +186,8 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
     if (!ed.nombre.trim()) { setAviso({ ok: false, t: "Falta el nombre del negocio." }); return; }
     const resenas_url = ed.resenas_url?.trim() || null;
     if (resenas_url && !/^https:\/\/\S+$/.test(resenas_url)) { setAviso({ ok: false, t: "El link de reseñas tiene que empezar con https:// y no llevar espacios." }); return; }
-    const { id, slug, nombre, rubro, color, espera_horas, vence_dias, estado, inicio_prueba } = ed;
-    const r = await sb.from("negocios").update({ slug: slugify(slug), nombre: nombre.trim(), rubro, color, espera_horas, vence_dias, estado, inicio_prueba, resenas_url }).eq("id", id);
+    const { id, slug, nombre, rubro, color, espera_horas, vence_dias, estado, inicio_prueba, interno } = ed;
+    const r = await sb.from("negocios").update({ slug: slugify(slug), nombre: nombre.trim(), rubro, color, espera_horas, vence_dias, estado, inicio_prueba, resenas_url, interno: !!interno }).eq("id", id);
     if (r.error) { setAviso({ ok: false, t: msg(r.error) }); return; }
 
     // Contacto del dueño: solo lo ve el superadmin (los premios se guardan aparte, con su botón).
@@ -286,7 +292,7 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
           const e = ESTADO[n.estado]; const d = diasPrueba(n);
           return (
             <button key={n.id} className="neg" aria-current={n.id === sel} onClick={() => { setSel(n.id); setBorrado(""); }}>
-              <span className="row"><strong>{n.nombre}</strong><span className={"chip " + e[0]}>{e[1]}</span></span>
+              <span className="row"><strong>{n.nombre}</strong><span className={"chip " + (n.interno ? "c-neutral" : e[0])}>{n.interno ? "Interno" : e[1]}</span></span>
               <span className="muted small">{socios[n.id] === undefined ? "" : `${socios[n.id]} ${socios[n.id] === 1 ? "cliente" : "clientes"} · `}{n.estado === "prueba" ? (d > 0 ? `${d} días de prueba` : "Prueba terminada") : n.rubro || ""}</span>
             </button>);
         })}
@@ -318,6 +324,8 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
           </div>
           <label>Link de reseñas de Google (opcional)<input type="url" value={ed.resenas_url ?? ""} onChange={(e) => set("resenas_url", e.target.value)} placeholder="https://g.page/r/…/review" /></label>
           <p className="small muted" style={{ marginTop: -6 }}>El dueño lo saca de su Perfil de Empresa de Google → <b>Pedir reseñas</b>. Con el link cargado, la tarjeta le ofrece al cliente dejar su reseña a partir de la 2ª visita, una sola vez y sin nada a cambio.</p>
+          <label className="check"><input type="checkbox" checked={!!ed.interno} onChange={(e) => set("interno", e.target.checked)} />
+            <span>Negocio interno <span className="small muted" style={{ display: "block", fontWeight: 400 }}>De De la Casa (demo, el tuyo): no cuenta en los números del Resumen.</span></span></label>
 
           <div><h2 style={{ marginBottom: 4 }}>Contacto del dueño</h2>
             <p className="small muted" style={{ marginBottom: 8 }}>Solo lo ves vos. Se guarda con "Guardar cambios".</p>
@@ -341,7 +349,7 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
             {miembros === null ? <p className="muted small">Cargando…</p> : (<>
               {miembros.map((m) => (
                 <div key={m.user_id}>
-                  <div className="pr"><span style={{ wordBreak: "break-all" }}>{m.email} <span className="chip c-neutral">{m.rol === "dueno" ? "Dueño" : "Empleado"}</span></span>
+                  <div className="pr" style={{ flexWrap: "wrap" }}><span style={{ overflowWrap: "anywhere" }}>{m.email} <span className="chip c-neutral">{m.rol === "dueno" ? "Dueño" : "Empleado"}</span></span>
                     <span style={{ display: "flex", gap: 6 }}>
                       <button className="x" onClick={() => { setCambiando(m.user_id); setNuevaClave(generarClave()); setAvisoU(null); }}>Contraseña</button>
                       <button className="x" onClick={() => quitar(m)}>Quitar</button></span></div>
@@ -379,6 +387,11 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
           <div style={{ borderTop: "1px solid var(--line)", paddingTop: 12 }}><h2 style={{ marginBottom: 4 }}>Premios</h2>
             <p className="small muted" style={{ marginBottom: 8 }}>El dueño también los puede cambiar desde su panel. Se guardan con su propio botón.</p>
             <EditorPremios negocioId={ed.id} inicial={premios} demo={demo} onGuardado={(p) => { setPremios(p); cargarResumen(); cargarCambios(ed.id); }} />
+          </div>
+
+          <div style={{ borderTop: "1px solid var(--line)", paddingTop: 12 }}><h2 style={{ marginBottom: 4 }}>Información en la tarjeta</h2>
+            <p className="small muted" style={{ marginBottom: 8 }}>Texto y links que ve el cliente debajo de los premios. El dueño también lo puede cambiar desde su panel.</p>
+            {info ? <EditorInfo key={ed.id} negocioId={ed.id} inicial={info} demo={demo} onGuardado={setInfo} /> : <p className="muted small">Cargando…</p>}
           </div>
 
           <div><h2 style={{ marginBottom: 8 }}>Historial de premios</h2>

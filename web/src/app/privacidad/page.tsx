@@ -1,8 +1,16 @@
 // Domicilio provisorio (solo la localidad): cambiarlo por una casilla de correo u oficina virtual al empezar a cobrar.
 // Conviene que la revise un abogado.
 import { Firma } from "@/components/Firma";
+import { og } from "@/lib/seo";
 
-export const metadata = { title: "Política de privacidad · De la Casa" };
+const DESCRIPCION = "Qué datos guarda De la Casa, para qué los usa y cómo pedir que se borren (Ley 25.326).";
+export const metadata = {
+  title: "Política de privacidad · De la Casa",
+  description: DESCRIPCION,
+  alternates: { canonical: "/privacidad/" },
+  openGraph: og("Política de privacidad · De la Casa", DESCRIPCION, "/privacidad/"),
+  robots: { index: true },
+};
 
 export default function Privacidad() {
   return (

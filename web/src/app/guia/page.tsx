@@ -1,8 +1,16 @@
 import Link from "next/link";
 import { Firma, linkWhatsapp } from "@/components/Firma";
+import { og } from "@/lib/seo";
 
 // Guía para el negocio (dueño y empleados). Sin login: se puede mandar el link por WhatsApp o imprimir.
-export const metadata = { title: "Cómo se usa · De la Casa" };
+const DESCRIPCION = "Guía para negocios: cómo sumar visitas, entregar premios y usar el panel de la tarjeta de cliente frecuente De la Casa.";
+export const metadata = {
+  title: "Cómo se usa · De la Casa",
+  description: DESCRIPCION,
+  alternates: { canonical: "/guia/" },
+  openGraph: og("Cómo se usa · De la Casa", DESCRIPCION, "/guia/"),
+  robots: { index: true },
+};
 
 export default function Guia() {
   return (

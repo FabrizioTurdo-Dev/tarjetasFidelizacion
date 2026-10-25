@@ -1,0 +1,32 @@
+# De la Casa
+
+> Tarjeta de fidelización (cliente frecuente) virtual para comercios y servicios de Argentina. El cliente la tiene en el celular sin descargar ninguna app y el negocio la administra desde un panel web. 30 días de prueba gratis; después, un abono mensual.
+
+## Qué es
+- Reemplaza la tarjeta de cartón con sellos: el cliente escanea el QR del mostrador, completa nombre y teléfono o mail, y en unos 20 segundos tiene su tarjeta con número de socio.
+- El negocio suma visitas escaneando la tarjeta del cliente con su celular (o buscándolo por número de socio). Cada visita queda registrada: quién la sumó y cuándo.
+- Premios en escalera que elige cada negocio (por ejemplo: un café a las 5 visitas, una torta a las 10, una cena a las 20). Se pueden cambiar en cualquier momento desde el panel.
+- Funciona en iPhone (guardada en la pantalla de inicio) y en Android (desde el navegador).
+
+## Para quién
+Cafeterías, restaurantes, panaderías, heladerías, peluquerías, barberías, centros de estética, gimnasios y cualquier comercio o servicio de Argentina con clientes que vuelven.
+
+## Qué ve el negocio
+- Cuántos clientes tienen la tarjeta y cuántos se suman cada mes.
+- Clientes que dejaron de venir hace más de 30 días, para volver a contactarlos.
+- Los 10 mejores clientes, los cumpleaños del mes, visitas por día y premios entregados.
+- La tarjeta invita al cliente a dejar una reseña en Google desde su segunda visita, sin nada a cambio.
+
+## Datos y privacidad
+Solo se piden nombre y teléfono o mail (cumpleaños opcional). Sin DNI. Los datos son del negocio y no se venden ni se comparten. Cumple la Ley 25.326 de protección de datos personales.
+
+## Precio
+30 días gratis, sin tarjeta de crédito y sin compromiso, con la tarjeta armada con el nombre, los colores y los premios del negocio, más el cartel con el QR para el mostrador. Después, un abono mensual; los primeros negocios tienen precio de fundador.
+
+## Links
+- [Página principal y formulario para pedir la prueba](https://delacasa.com.ar/)
+- [Guía de uso para negocios](https://delacasa.com.ar/guia/)
+- [Política de privacidad](https://delacasa.com.ar/privacidad/)
+
+## Contacto
+De la Casa, Ingeniero Maschwitz, Buenos Aires, Argentina. devfabri@gmail.com

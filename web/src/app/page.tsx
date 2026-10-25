@@ -2,12 +2,18 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Firma } from "@/components/Firma";
 import { FormPrueba } from "@/components/FormPrueba";
+import { og, SITIO } from "@/lib/seo";
 import { marca } from "@/lib/util";
+
+const TITULO = "De la Casa · Tarjeta de cliente frecuente en el celular";
+const DESCRIPCION = "Tarjeta de fidelización virtual para comercios de Argentina: tus clientes suman visitas y ganan premios desde el celular, sin bajar apps. 30 días gratis.";
 
 // Página pública: qué es, cómo funciona y el formulario para pedir la prueba.
 export const metadata: Metadata = {
-  title: "De la Casa · Tarjeta de cliente frecuente en el celular",
-  description: "La tarjeta de cliente frecuente de tu negocio, en el celular de tus clientes. Sin apps. 30 días gratis.",
+  title: TITULO,
+  description: DESCRIPCION,
+  alternates: { canonical: "/" },
+  openGraph: og(TITULO, DESCRIPCION, "/"),
   robots: { index: true },
 };
 
@@ -20,9 +26,34 @@ const PREGUNTAS: [string, string][] = [
   ["¿Y si después no quiero seguir?", "No pasa nada: la prueba no te compromete a nada. Si no seguís, la tarjeta se pausa."],
 ];
 
+// Datos estructurados (schema.org) para Google y los asistentes de IA. Las preguntas salen de la misma lista que se muestra.
+const LD = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization", "@id": `${SITIO}/#org`, name: "De la Casa", url: `${SITIO}/`,
+      logo: `${SITIO}/icons/icon-512.png`, email: "devfabri@gmail.com",
+      address: { "@type": "PostalAddress", addressLocality: "Ingeniero Maschwitz", addressRegion: "Buenos Aires", addressCountry: "AR" },
+      areaServed: { "@type": "Country", name: "Argentina" },
+    },
+    { "@type": "WebSite", "@id": `${SITIO}/#web`, name: "De la Casa", url: `${SITIO}/`, inLanguage: "es-AR", publisher: { "@id": `${SITIO}/#org` } },
+    {
+      "@type": "SoftwareApplication", name: "De la Casa", url: `${SITIO}/`, description: DESCRIPCION,
+      applicationCategory: "BusinessApplication", operatingSystem: "Web, iOS, Android", inLanguage: "es-AR",
+      image: `${SITIO}/og.png`, publisher: { "@id": `${SITIO}/#org` },
+      featureList: ["Tarjeta de cliente frecuente en el celular, sin apps", "Visitas sumadas escaneando un QR", "Premios por cantidad de visitas", "Panel con clientes, visitas, canjes y cumpleaños"],
+    },
+    {
+      "@type": "FAQPage", inLanguage: "es-AR",
+      mainEntity: PREGUNTAS.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })),
+    },
+  ],
+};
+
 export default function Inicio() {
   return (
     <main className="screen landing">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(LD).replace(/</g, "\\u003c") }} />
       <header className="top">
         <strong className="marca-dlc">De la Casa</strong>
         <nav className="links"><Link href="/mis-tarjetas/">Mis tarjetas</Link><Link href="/panel/">Ingresar</Link></nav>

@@ -1,0 +1,14 @@
+# Solo se indexan la página pública, la guía y la política de privacidad.
+# Tarjetas, altas, paneles y administración son privados.
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /alta/
+Disallow: /cartel/
+Disallow: /escanear/
+Disallow: /login/
+Disallow: /mis-tarjetas/
+Disallow: /panel/
+Disallow: /t/
+
+Sitemap: https://delacasa.com.ar/sitemap.xml

@@ -8,15 +8,19 @@ export type Solicitud = {
   id: string; created_at: string; negocio: string; rubro: string | null; ciudad: string | null; pais: string | null;
   nombre: string; whatsapp: string; email: string | null; como_nos_conocio: string | null;
   estado: "nueva" | "contactada" | "habilitada" | "descartada"; negocio_id: string | null;
+  /** Llegó después de lanzar la promoción: al habilitarla, si quedan lugares, el negocio es socio fundador. */
+  para_fundador?: boolean;
 };
 
 const ESTADOS: Record<Solicitud["estado"], [string, string]> = {
   nueva: ["c-warn", "Nueva"], contactada: ["c-neutral", "Contactada"], habilitada: ["c-good", "Habilitada"], descartada: ["c-neutral", "Descartada"],
 };
 
-export function Solicitudes({ lista, demo = false, onCambio, onCreado }: {
+export function Solicitudes({ lista, demo = false, lugares, onCambio, onCreado }: {
   lista: Solicitud[] | null;
   demo?: boolean;
+  /** Lugares de socio fundador libres (de 10). */
+  lugares?: number;
   onCambio: () => void;
   onCreado: (negocioId: string) => void;
 }) {
@@ -64,6 +68,7 @@ export function Solicitudes({ lista, demo = false, onCambio, onCreado }: {
           <option value="abiertas">Nuevas y contactadas</option><option value="todas">Todas</option></select>
       </div>
       <p className="small muted">Llegan desde el formulario de la página principal. Escribiles por WhatsApp en el día; si siguen, tocá "Crear negocio" y terminá de armar la tarjeta.</p>
+      {lugares !== undefined && <p className="small muted">Socios fundadores: {lugares ? `quedan ${lugares} de 10 lugares. Cada negocio que creás desde una solicitud nueva ocupa uno.` : "ya no quedan lugares."}</p>}
       {aviso && <div className={aviso.ok ? "okmsg" : "errmsg"}>{aviso.t}</div>}
       {!visibles.length && <p className="muted small">No hay solicitudes {filtro === "abiertas" ? "pendientes" : "todavía"}.</p>}
       {visibles.map((s) => {
@@ -73,7 +78,9 @@ export function Solicitudes({ lista, demo = false, onCambio, onCreado }: {
           <div key={s.id} className="pr" style={{ flexDirection: "column", alignItems: "stretch", gap: 6 }}>
             <div style={{ display: "flex", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
               <strong>{s.negocio}{s.rubro ? <span className="muted" style={{ fontWeight: 400 }}> · {s.rubro}</span> : null}</strong>
-              <span className={"chip " + e[0]}>{e[1]}</span>
+              <span style={{ display: "flex", gap: 4 }}>
+                {s.para_fundador && !s.negocio_id && !!lugares && <span className="chip c-warn" title="Si la habilitás con «Crear negocio», entra como socio fundador">Entra como fundador</span>}
+                <span className={"chip " + e[0]}>{e[1]}</span></span>
             </div>
             <span className="small">{s.nombre} · {s.whatsapp}{s.email ? ` · ${s.email}` : ""}</span>
             <span className="small muted">{[s.ciudad, s.pais].filter(Boolean).join(", ") || "Sin ciudad"} · {new Date(s.created_at).toLocaleString("es-AR", { dateStyle: "short", timeStyle: "short" })}{s.como_nos_conocio ? ` · Nos conoció por: ${s.como_nos_conocio}` : ""}</span>

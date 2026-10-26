@@ -44,6 +44,8 @@
   {"fase": "6. Lanzamiento", "titulo": "El dueño edita sus premios (con historial de cambios)", "estado": "Hecho"},
   {"fase": "6. Lanzamiento", "titulo": "Superadmin: resumen general y control por negocio", "estado": "Hecho"},
   {"fase": "6. Lanzamiento", "titulo": "Página pública y formulario \"Quiero probarlo\"", "estado": "Hecho"},
+  {"fase": "6. Lanzamiento", "titulo": "Rediseño de la página pública (animaciones, demo, precios y socios fundadores)", "estado": "Hecho"},
+  {"fase": "6. Lanzamiento", "titulo": "Contador automático de socios fundadores (10 lugares)", "estado": "Hecho"},
   {"fase": "6. Lanzamiento", "titulo": "Solicitudes en Administración (hecho) y aviso por mail (falta)", "estado": "En curso"},
   {"fase": "6. Lanzamiento", "titulo": "Botón \"Escribinos\" en el panel del dueño", "estado": "Hecho"},
   {"fase": "6. Lanzamiento", "titulo": "Video de 30 segundos y mensajes por Instagram", "estado": "Pendiente"}

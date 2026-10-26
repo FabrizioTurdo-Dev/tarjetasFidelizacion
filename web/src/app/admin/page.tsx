@@ -53,7 +53,7 @@ const DEMO_MIEMBROS: Record<string, Miembro[]> = {
 };
 const DEMO_SOCIOS: Record<string, number> = { d1: 24, d2: 87, d3: 12 };
 const DEMO_RESUMEN: DatosResumen = {
-  clientes_total: 123, clientes_30: 31, visitas_30: 402, canjes_30: 37, solicitudes_nuevas: 1,
+  clientes_total: 123, clientes_30: 31, visitas_30: 402, canjes_30: 37, solicitudes_nuevas: 1, lugares_fundadores: 10,
   negocios: DEMO_NEGOCIOS.map((n, i) => ({
     ...n, rubro: n.rubro, clientes: DEMO_SOCIOS[n.id], clientes_30: [9, 22, 0][i], visitas_30: [118, 284, 0][i], canjes_30: [11, 26, 0][i],
     ultima_visita: i === 2 ? new Date(Date.now() - 40 * 864e5).toISOString() : new Date(Date.now() - i * 864e5).toISOString(),
@@ -63,7 +63,7 @@ const DEMO_RESUMEN: DatosResumen = {
   })),
 };
 const DEMO_SOLICITUDES: Solicitud[] = [
-  { id: "s1", created_at: new Date(Date.now() - 2 * 36e5).toISOString(), negocio: "Panadería La Espiga", rubro: "Panadería", ciudad: "Escobar", pais: "Argentina", nombre: "Marta", whatsapp: "11 4567 8901", email: null, como_nos_conocio: "Vi la tarjeta en Almadekh", estado: "nueva", negocio_id: null },
+  { id: "s1", created_at: new Date(Date.now() - 2 * 36e5).toISOString(), negocio: "Panadería La Espiga", rubro: "Panadería", ciudad: "Escobar", pais: "Argentina", nombre: "Marta", whatsapp: "11 4567 8901", email: null, como_nos_conocio: "Vi la tarjeta en Almadekh", estado: "nueva", negocio_id: null, para_fundador: true },
 ];
 
 function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
@@ -109,7 +109,7 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
     if (!error) setResumen(data as DatosResumen);
   }, []);
   const cargarSolicitudes = useCallback(async () => {
-    const { data } = await sb.from("solicitudes").select("id,created_at,negocio,rubro,ciudad,pais,nombre,whatsapp,email,como_nos_conocio,estado,negocio_id").order("created_at", { ascending: false }).limit(300);
+    const { data } = await sb.from("solicitudes").select("id,created_at,negocio,rubro,ciudad,pais,nombre,whatsapp,email,como_nos_conocio,estado,negocio_id,para_fundador").order("created_at", { ascending: false }).limit(300);
     setSolicitudes((data as Solicitud[]) ?? []);
   }, []);
   const cargarCambios = useCallback((id: string) => {
@@ -280,7 +280,7 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
     </div>);
 
   if (vista === "resumen") return (<>{pestanas}<Resumen datos={resumen} onAbrir={abrir} onSolicitudes={() => setVista("solicitudes")} /></>);
-  if (vista === "solicitudes") return (<>{pestanas}<Solicitudes lista={solicitudes} demo={demo}
+  if (vista === "solicitudes") return (<>{pestanas}<Solicitudes lista={solicitudes} demo={demo} lugares={resumen?.lugares_fundadores}
     onCambio={() => { cargarSolicitudes(); cargarResumen(); }}
     onCreado={(id) => { cargarLista().then(() => abrir(id)); }} /></>);
 
@@ -292,7 +292,7 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
           const e = ESTADO[n.estado]; const d = diasPrueba(n);
           return (
             <button key={n.id} className="neg" aria-current={n.id === sel} onClick={() => { setSel(n.id); setBorrado(""); }}>
-              <span className="row"><strong>{n.nombre}</strong><span className={"chip " + (n.interno ? "c-neutral" : e[0])}>{n.interno ? "Interno" : e[1]}</span></span>
+              <span className="row"><strong>{n.nombre}</strong><span style={{ display: "flex", gap: 4 }}>{n.fundador && <span className="chip c-warn">Fundador</span>}<span className={"chip " + (n.interno ? "c-neutral" : e[0])}>{n.interno ? "Interno" : e[1]}</span></span></span>
               <span className="muted small">{socios[n.id] === undefined ? "" : `${socios[n.id]} ${socios[n.id] === 1 ? "cliente" : "clientes"} · `}{n.estado === "prueba" ? (d > 0 ? `${d} días de prueba` : "Prueba terminada") : n.rubro || ""}</span>
             </button>);
         })}
@@ -306,6 +306,7 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
             <h2>{ed.nombre}</h2>
             <span className="chip c-neutral">{socios[ed.id] ?? "…"} {socios[ed.id] === 1 ? "cliente tiene" : "clientes tienen"} la tarjeta</span>
           </div>
+          {ed.fundador && <p className="tip"><b>Socio fundador.</b> Paga $10.000 por mes durante 6 meses; después, $20.000. Lo marcó la base al habilitarlo desde una solicitud de la página.</p>}
           {!demo && <div className="links"><Link href={`/panel/?n=${lista.find((x) => x.id === ed.id)?.slug ?? ed.slug}`}>Ver su panel: clientes y links de cada tarjeta →</Link></div>}
           <label>Nombre del negocio<input value={ed.nombre} onChange={(e) => set("nombre", e.target.value)} /></label>
           <div className="row2">

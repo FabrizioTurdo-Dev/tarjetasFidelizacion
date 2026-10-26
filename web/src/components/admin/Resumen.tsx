@@ -3,7 +3,7 @@ import { diasPrueba, linkWa, type Negocio } from "@/lib/util";
 
 // Resumen general del superadmin (función resumen_admin): totales y una fila por negocio,
 // para ver rápido quién usa la tarjeta y a quién hay que llamar.
-export type FilaResumen = Pick<Negocio, "id" | "nombre" | "slug" | "estado" | "inicio_prueba" | "rubro" | "interno"> & {
+export type FilaResumen = Pick<Negocio, "id" | "nombre" | "slug" | "estado" | "inicio_prueba" | "rubro" | "interno" | "fundador"> & {
   clientes: number; clientes_30: number; visitas_30: number; canjes_30: number;
   ultima_visita: string | null;
   premios: { visitas: number; nombre: string; activo: boolean }[];
@@ -13,6 +13,8 @@ export type FilaResumen = Pick<Negocio, "id" | "nombre" | "slug" | "estado" | "i
 export type DatosResumen = {
   negocios: FilaResumen[];
   clientes_total: number; clientes_30: number; visitas_30: number; canjes_30: number; solicitudes_nuevas: number;
+  /** Lugares de socio fundador libres (de 10). */
+  lugares_fundadores?: number;
 };
 
 export const ESTADO: Record<string, [string, string]> = {
@@ -44,6 +46,7 @@ export function Resumen({ datos, onAbrir, onSolicitudes }: {
         <div className="kpi"><b>{datos.canjes_30}</b><span>Premios entregados (30 días)</span></div>
         <button className="kpi" style={{ textAlign: "left", font: "inherit", color: "inherit", cursor: "pointer", borderColor: datos.solicitudes_nuevas ? "var(--warn)" : undefined }} onClick={onSolicitudes}>
           <b>{datos.solicitudes_nuevas}</b><span>Solicitudes sin contestar →</span></button>
+        {datos.lugares_fundadores !== undefined && <div className="kpi"><b>{datos.lugares_fundadores}</b><span>Lugares de fundador libres (de 10)</span></div>}
       </div>
 
       <section className="box"><h2>Negocios</h2>
@@ -57,6 +60,7 @@ export function Resumen({ datos, onAbrir, onSolicitudes }: {
                 <tr key={n.id}>
                   <td><button className="x" style={{ padding: "4px 10px", textAlign: "left" }} onClick={() => onAbrir(n.id)}><strong>{n.nombre}</strong></button>
                     <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginTop: 4 }}>
+                      {n.fundador && <span className="chip c-warn">Fundador</span>}
                       {n.interno ? <span className="chip c-neutral">Interno</span> : (<>
                         <span className={"chip " + e[0]}>{e[1]}{n.estado === "prueba" ? ` · ${d > 0 ? `${d} d` : "terminó"}` : ""}</span>
                         {(sin === null || sin > 14) && <span className="chip c-bad">Sin uso</span>}</>)}

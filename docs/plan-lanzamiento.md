@@ -153,7 +153,7 @@ Una función en la base (`resumen_admin`) que solo responde al superadmin con 2F
 
 ### Antes de cobrar (decisiones tuyas)
 - **Monotributo:** para cobrar suscripciones en regla tenés que poder hacer factura C por cada cobro. Mercado Pago no factura por vos.
-- **Precio fundador** en pesos, y cada cuánto lo ajustás.
+- **Precio:** decidido el 26/10/2026, $20.000 por mes y $10.000 por mes durante 6 meses para los primeros 10 negocios (socios fundadores). Falta decidir cada cuánto se ajusta.
 - **Días de prueba:** hoy son 30. Recomendación: no bajar de 21 (en 10 días casi no hay segundas visitas y el dueño no ve resultados).
 - Cuenta de Mercado Pago verificada.
 
@@ -193,7 +193,7 @@ Una función en la base (`resumen_admin`) que solo responde al superadmin con 2F
 | Tema | Opciones |
 | --- | --- |
 | Días de prueba | 30 (hoy) · 21 · 10 |
-| Precio fundador | A definir |
+| Precio fundador | Decidido (26/10/2026): $20.000 por mes; los primeros 10 negocios que llegan por el formulario de la página y se habilitan (socios fundadores) pagan $10.000 por mes durante 6 meses. Contador automático en la página (migración 0007) |
 | Monotributo | ¿Ya lo tenés? |
 | DNS | Cloudflare (recomendado) · DomWeb |
 | Aviso de solicitudes nuevas | Mail (recomendado) · solo en Administración |

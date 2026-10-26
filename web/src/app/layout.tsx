@@ -25,9 +25,10 @@ export const viewport: Viewport = { width: "device-width", initialScale: 1, them
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es">
+    // suppressHydrationWarning: la página pública le agrega una clase a <html> antes de que cargue React (ver app/page.tsx).
+    <html lang="es" suppressHydrationWarning>
       <head>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" />
       </head>
       <body>{children}</body>
     </html>

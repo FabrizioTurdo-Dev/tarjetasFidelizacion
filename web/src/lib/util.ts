@@ -84,6 +84,8 @@ export type Negocio = {
   resenas_url?: string | null;
   /** De De la Casa (demo, el de Fabri): no cuenta en los números del resumen. */
   interno?: boolean;
+  /** Socio fundador: vino del formulario de la página y entró entre los 10 primeros (lo marca la base al habilitarlo). */
+  fundador?: boolean;
   info_titulo?: string | null; info_texto?: string | null; info_links?: LinkInfo[];
 };
 export type EstadoCliente = {

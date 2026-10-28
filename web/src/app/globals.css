@@ -571,6 +571,11 @@ html{scroll-behavior:smooth}
 .enlace.wa span{flex:1}
 .enlace.wa small{color:#fff;opacity:.9}
 .enlace.wa::after{color:#fff}
+/* Cartel de suscripción del panel (components/Suscripcion.tsx) */
+.suscripcion{border-color:var(--warn);background:var(--warn-soft)}
+.suscripcion.corte{border-color:var(--bad);background:var(--bad-soft)}
+.suscripcion h2{color:var(--warn)} .suscripcion.corte h2{color:var(--bad)}
+.suscripcion .btn{align-self:flex-start;width:auto;padding:12px 22px}
 /* Botón chico para escribirle a un cliente (lista de clientes del panel) */
 .contacto{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
 .wa-ico{display:inline-grid;place-items:center;width:30px;height:30px;flex:none;border-radius:50%;background:#1da851;color:#fff}

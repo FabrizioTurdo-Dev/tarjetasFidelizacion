@@ -11,6 +11,7 @@ import { sb } from "@/lib/supabase";
 import { negociosDelUsuario, type NegocioUsuario } from "@/lib/negocios";
 import { BASE, esTelefono, linkWa, marca, socio, type Negocio } from "@/lib/util";
 import { LogoWhatsapp } from "@/components/Whatsapp";
+import { AvisoSuscripcion } from "@/components/Suscripcion";
 
 type Cli = { token: string; id: string; numero_socio: number; nombre: string; telefono: string | null; email: string | null; cumple: string | null; visitas: number; ultima_visita: string | null; created_at: string; resena_abierta_at: string | null };
 const DIA = 864e5;
@@ -123,6 +124,7 @@ function Panel({ uid, demo = false }: { uid: string; demo?: boolean }) {
           {esSuper && <Link href="/admin/">Administración</Link>}
         </div>
       </div>
+      {neg && (neg.rol === "dueno" || esSuper || demo) && <AvisoSuscripcion negocio={neg} />}
       {cargando && <p className="muted">Cargando…</p>}
       <section className="hero">
         <div>

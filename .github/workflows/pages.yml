@@ -1,6 +1,6 @@
 name: Publicar en GitHub Pages
 
-# Arma el sitio completo: tablero, prototipo y la app real (en /app/).
+# Arma el sitio: el prototipo y la app real (en /app/).
 # Requiere: Settings → Pages → Source: "GitHub Actions".
 on:
   push:
@@ -37,7 +37,7 @@ jobs:
         run: |
           mkdir _site
           cp index.html _site/
-          cp -r tablero prototipo data _site/
+          cp -r prototipo _site/
           cp -r web/out _site/app
           touch _site/.nojekyll
       - uses: actions/upload-pages-artifact@v3

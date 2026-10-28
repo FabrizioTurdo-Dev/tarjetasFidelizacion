@@ -1,9 +1,7 @@
-# Tarjetas de fidelización
+# De la Casa
 
-Tarjeta de cliente frecuente en el celular (Google Wallet + tarjeta web) con panel para el negocio.
+Tarjeta de cliente frecuente en el celular, con panel para el negocio. https://delacasa.com.ar
 
-- `CLAUDE.md`: contexto y decisiones del proyecto.
-- `docs/plan-mvp.md`: plan completo del MVP.
-- `docs/propuesta-comercios.md`: hoja para imprimir y mensajes de WhatsApp.
-
-El código (Next.js + Supabase) se agrega en el próximo paso.
+- `web/`: la app (Next.js, export estático).
+- `supabase/`: migraciones de la base y Edge Functions.
+- `prototipo/`: pantallas estáticas con datos de ejemplo.

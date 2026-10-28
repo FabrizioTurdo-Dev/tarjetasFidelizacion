@@ -1,5 +1,5 @@
 # Netlify publica solo la app real (web/) en la raíz de delacasa.com.ar.
-# El tablero y el prototipo siguen en GitHub Pages.
+# El prototipo sigue en GitHub Pages.
 [build]
   base = "web"
   command = "npm ci && npm run build"

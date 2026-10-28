@@ -9,7 +9,8 @@ import { Firma, linkWhatsapp } from "@/components/Firma";
 import { BotonInstalar } from "@/components/Instalar";
 import { sb } from "@/lib/supabase";
 import { negociosDelUsuario, type NegocioUsuario } from "@/lib/negocios";
-import { BASE, marca, socio, type Negocio } from "@/lib/util";
+import { BASE, esTelefono, linkWa, marca, socio, type Negocio } from "@/lib/util";
+import { LogoWhatsapp } from "@/components/Whatsapp";
 
 type Cli = { token: string; id: string; numero_socio: number; nombre: string; telefono: string | null; email: string | null; cumple: string | null; visitas: number; ultima_visita: string | null; created_at: string; resena_abierta_at: string | null };
 const DIA = 864e5;
@@ -176,9 +177,14 @@ function Panel({ uid, demo = false }: { uid: string; demo?: boolean }) {
 
       <section className="box"><h2>Todos los clientes</h2>
         <div style={{ overflowX: "auto" }}><table><thead><tr><th>Socio</th><th>Nombre</th><th>Contacto</th><th>Visitas</th><th>Última visita</th><th>Tarjeta</th></tr></thead>
-          <tbody>{clientes.map((c) => <tr key={c.id}><td>{socio(c.numero_socio)}</td><td>{c.nombre}</td><td>{c.telefono || c.email}</td><td>{vigentes(c)}</td><td>{fecha(c.ultima_visita)}</td>
+          <tbody>{clientes.map((c) => <tr key={c.id}><td>{socio(c.numero_socio)}</td><td>{c.nombre}</td>
+            <td><span className="contacto">
+              {esTelefono(c.telefono) && <a className="wa-ico" href={linkWa(c.telefono!, `¡Hola, ${c.nombre}! Te escribo de ${neg?.nombre}. `)} target="_blank" rel="noopener noreferrer"
+                aria-label={`Escribirle a ${c.nombre} por WhatsApp`} title="Escribir por WhatsApp"><LogoWhatsapp size={17} /></a>}
+              {c.telefono || c.email}</span></td>
+            <td>{vigentes(c)}</td><td>{fecha(c.ultima_visita)}</td>
             <td><button className="x" style={{ padding: "4px 10px", whiteSpace: "nowrap" }} onClick={() => reenviar(c)}>{copiado === c.id ? "¡Copiado!" : "Reenviar link"}</button></td></tr>)}</tbody></table></div>
-        <p className="small muted">Si un cliente perdió su tarjeta, tocá "Reenviar link" y mandáselo por WhatsApp: con ese link recupera sus visitas.</p>
+        <p className="small muted">Con el botón verde le escribís al cliente por WhatsApp. Si perdió su tarjeta, tocá "Reenviar link" y mandáselo: con ese link recupera sus visitas.</p>
       </section>
     </>
   );

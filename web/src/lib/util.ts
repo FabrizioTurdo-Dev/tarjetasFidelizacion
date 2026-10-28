@@ -84,7 +84,7 @@ export type Negocio = {
   resenas_url?: string | null;
   /** De De la Casa (demo, el de Fabri): no cuenta en los números del resumen. */
   interno?: boolean;
-  /** Socio fundador: vino del formulario de la página y entró entre los 10 primeros (lo marca la base al habilitarlo). */
+  /** Socio fundador (10 lugares): lo marca la base al habilitar una solicitud de la página, o el superadmin a mano. */
   fundador?: boolean;
   info_titulo?: string | null; info_texto?: string | null; info_links?: LinkInfo[];
 };
@@ -112,7 +112,14 @@ export function linkWa(numero: string, texto: string): string {
   let d = (numero || "").replace(/\D/g, "");
   if (!numero.trim().startsWith("+") && !d.startsWith("54")) {
     d = d.replace(/^0/, "");
+    // "11 15 2345 6789": se saca el 15 que va después de la característica (de 2 a 4 números).
+    if (d.length === 12) for (const l of [2, 3, 4]) if (d.slice(l, l + 2) === "15") { d = d.slice(0, l) + d.slice(l + 2); break; }
     if (d.length === 10) d = "549" + d;
   }
+  // "+54 11 2345 6789": en WhatsApp los celulares de Argentina llevan el 9 después del 54.
+  if (d.length === 12 && d.startsWith("54") && d[2] !== "9") d = "549" + d.slice(2);
   return `https://wa.me/${d}?text=${encodeURIComponent(texto)}`;
 }
+
+/** Si el texto parece un teléfono (y no un mail), para ofrecer escribirle por WhatsApp. */
+export const esTelefono = (s: string | null | undefined) => !!s && !s.includes("@") && s.replace(/\D/g, "").length >= 8;

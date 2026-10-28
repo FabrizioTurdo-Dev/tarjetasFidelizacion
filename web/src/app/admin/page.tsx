@@ -7,8 +7,10 @@ import { EditorInfo, infoDeNegocio } from "@/components/Info";
 import { Qr } from "@/components/Qr";
 import { ESTADO, Resumen, type DatosResumen } from "@/components/admin/Resumen";
 import { Solicitudes, type Solicitud } from "@/components/admin/Solicitudes";
+import { Avisos } from "@/components/admin/Avisos";
 import { sb } from "@/lib/supabase";
 import { BASE, diasPrueba, iniciales, linkWa, marca, msg, slugify, type Info, type Negocio } from "@/lib/util";
+import { CUPO_FUNDADORES, PRECIO, PRECIO_FUNDADOR } from "@/lib/precios";
 
 type Miembro = { user_id: string; email: string; rol: "dueno" | "empleado" };
 type Privado = { contacto_nombre: string; contacto_whatsapp: string; notas: string };
@@ -117,6 +119,12 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
       .then(({ data }) => setCambios((data as Cambio[]) ?? []));
   }, []);
 
+  // ?v=solicitudes: el aviso del celular abre directo esa pestaña.
+  useEffect(() => {
+    const v = new URLSearchParams(location.search).get("v");
+    if (v === "solicitudes" || v === "negocios") setVista(v);
+  }, []);
+
   useEffect(() => {
     if (demo) { setEsSuper(true); setLista(DEMO_NEGOCIOS); setSocios(DEMO_SOCIOS); setSel("d1"); setResumen(DEMO_RESUMEN); setSolicitudes(DEMO_SOLICITUDES); return; }
     sb.from("perfiles").select("es_superadmin").eq("id", uid).maybeSingle().then(({ data }) => {
@@ -186,8 +194,9 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
     if (!ed.nombre.trim()) { setAviso({ ok: false, t: "Falta el nombre del negocio." }); return; }
     const resenas_url = ed.resenas_url?.trim() || null;
     if (resenas_url && !/^https:\/\/\S+$/.test(resenas_url)) { setAviso({ ok: false, t: "El link de reseñas tiene que empezar con https:// y no llevar espacios." }); return; }
-    const { id, slug, nombre, rubro, color, espera_horas, vence_dias, estado, inicio_prueba, interno } = ed;
-    const r = await sb.from("negocios").update({ slug: slugify(slug), nombre: nombre.trim(), rubro, color, espera_horas, vence_dias, estado, inicio_prueba, resenas_url, interno: !!interno }).eq("id", id);
+    if (ed.fundador && !eraFundador && libres <= 0) { setAviso({ ok: false, t: `Ya están ocupados los ${CUPO_FUNDADORES} lugares de socio fundador.` }); return; }
+    const { id, slug, nombre, rubro, color, espera_horas, vence_dias, estado, inicio_prueba, interno, fundador } = ed;
+    const r = await sb.from("negocios").update({ slug: slugify(slug), nombre: nombre.trim(), rubro, color, espera_horas, vence_dias, estado, inicio_prueba, resenas_url, interno: !!interno, fundador: !!fundador }).eq("id", id);
     if (r.error) { setAviso({ ok: false, t: msg(r.error) }); return; }
 
     // Contacto del dueño: solo lo ve el superadmin (los premios se guardan aparte, con su botón).
@@ -271,6 +280,9 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
   const nombreGuardado = ed ? lista.find((x) => x.id === ed.id)?.nombre ?? ed.nombre : "";
   const nombreOk = confirmaNombre.trim().toLowerCase() === nombreGuardado.trim().toLowerCase();
   const nClientes = ed ? socios[ed.id] : undefined;
+  // Lugares de socio fundador libres según lo guardado (la página pública los cuenta igual: lugares_fundadores).
+  const libres = Math.max(0, CUPO_FUNDADORES - lista.filter((x) => x.fundador).length);
+  const eraFundador = !!(ed && lista.find((x) => x.id === ed.id)?.fundador);
 
   const abrir = (id: string) => { setSel(id); setBorrado(""); setVista("negocios"); };
   const pestanas = (
@@ -280,7 +292,7 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
     </div>);
 
   if (vista === "resumen") return (<>{pestanas}<Resumen datos={resumen} onAbrir={abrir} onSolicitudes={() => setVista("solicitudes")} /></>);
-  if (vista === "solicitudes") return (<>{pestanas}<Solicitudes lista={solicitudes} demo={demo} lugares={resumen?.lugares_fundadores}
+  if (vista === "solicitudes") return (<>{pestanas}<Avisos demo={demo} /><Solicitudes lista={solicitudes} demo={demo} lugares={resumen?.lugares_fundadores}
     onCambio={() => { cargarSolicitudes(); cargarResumen(); }}
     onCreado={(id) => { cargarLista().then(() => abrir(id)); }} /></>);
 
@@ -306,7 +318,7 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
             <h2>{ed.nombre}</h2>
             <span className="chip c-neutral">{socios[ed.id] ?? "…"} {socios[ed.id] === 1 ? "cliente tiene" : "clientes tienen"} la tarjeta</span>
           </div>
-          {ed.fundador && <p className="tip"><b>Socio fundador.</b> Paga $10.000 por mes durante 6 meses; después, $20.000. Lo marcó la base al habilitarlo desde una solicitud de la página.</p>}
+          {eraFundador && <p className="tip"><b>Socio fundador.</b> Paga {PRECIO_FUNDADOR} por mes durante 6 meses; después, {PRECIO}.</p>}
           {!demo && <div className="links"><Link href={`/panel/?n=${lista.find((x) => x.id === ed.id)?.slug ?? ed.slug}`}>Ver su panel: clientes y links de cada tarjeta →</Link></div>}
           <label>Nombre del negocio<input value={ed.nombre} onChange={(e) => set("nombre", e.target.value)} /></label>
           <div className="row2">
@@ -327,6 +339,9 @@ function Admin({ uid, demo = false }: { uid: string; demo?: boolean }) {
           <p className="small muted" style={{ marginTop: -6 }}>El dueño lo saca de su Perfil de Empresa de Google → <b>Pedir reseñas</b>. Con el link cargado, la tarjeta le ofrece al cliente dejar su reseña a partir de la 2ª visita, una sola vez y sin nada a cambio.</p>
           <label className="check"><input type="checkbox" checked={!!ed.interno} onChange={(e) => set("interno", e.target.checked)} />
             <span>Negocio interno <span className="small muted" style={{ display: "block", fontWeight: 400 }}>De De la Casa (demo, el tuyo): no cuenta en los números del Resumen.</span></span></label>
+          <label className="check"><input type="checkbox" checked={!!ed.fundador} disabled={!eraFundador && libres <= 0} onChange={(e) => set("fundador", e.target.checked)} />
+            <span>Socio fundador <span className="small muted" style={{ display: "block", fontWeight: 400 }}>
+              {PRECIO_FUNDADOR} por mes durante 6 meses. {libres ? `Quedan ${libres} de ${CUPO_FUNDADORES} lugares` : "Ya no quedan lugares"}: cada fundador ocupa uno y la página baja el contador al guardar. Los que entran desde una solicitud se marcan solos.</span></span></label>
 
           <div><h2 style={{ marginBottom: 4 }}>Contacto del dueño</h2>
             <p className="small muted" style={{ marginBottom: 8 }}>Solo lo ves vos. Se guarda con "Guardar cambios".</p>

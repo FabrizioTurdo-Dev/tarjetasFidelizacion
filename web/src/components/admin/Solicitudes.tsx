@@ -68,7 +68,7 @@ export function Solicitudes({ lista, demo = false, lugares, onCambio, onCreado }
           <option value="abiertas">Nuevas y contactadas</option><option value="todas">Todas</option></select>
       </div>
       <p className="small muted">Llegan desde el formulario de la página principal. Escribiles por WhatsApp en el día; si siguen, tocá "Crear negocio" y terminá de armar la tarjeta.</p>
-      {lugares !== undefined && <p className="small muted">Socios fundadores: {lugares ? `quedan ${lugares} de 10 lugares. Cada negocio que creás desde una solicitud nueva ocupa uno.` : "ya no quedan lugares."}</p>}
+      {lugares !== undefined && <p className="small muted">Socios fundadores: {lugares ? `quedan ${lugares} de 10 lugares. Cada negocio que creás desde una solicitud nueva ocupa uno (a los que cargás vos, marcalos en Negocios).` : "ya no quedan lugares."}</p>}
       {aviso && <div className={aviso.ok ? "okmsg" : "errmsg"}>{aviso.t}</div>}
       {!visibles.length && <p className="muted small">No hay solicitudes {filtro === "abiertas" ? "pendientes" : "todavía"}.</p>}
       {visibles.map((s) => {

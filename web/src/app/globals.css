@@ -7,6 +7,8 @@
 }
 /* Instrument Serif tiene un solo peso: que el navegador no le invente la negrita. */
 html{font-synthesis-weight:none}
+/* Que el iPhone no agrande la letra por su cuenta al girar el celular. */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 @media (prefers-color-scheme:dark){:root{
   --marca-soft:#3a2620; --bg:#141211; --surface:#1e1b1a; --ink:#efe9e5; --muted:#a59d97; --line:#34302d;
   --good:#6fd08f; --good-soft:#163222; --warn:#f0b35a; --warn-soft:#3a2a10; --bad:#f2867e; --bad-soft:#3d1a18; color-scheme:dark}}
@@ -140,6 +142,8 @@ table{border-collapse:collapse;width:100%;font-size:14px} th,td{text-align:left;
 .tab{font:600 13px var(--body);border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 14px;cursor:pointer}
 .tab.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 textarea{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:11px 12px;resize:vertical}
+/* En el celular los campos van a 16px: con menos, el iPhone hace zoom al tocarlos y la pantalla queda agrandada. */
+@media (pointer:coarse){input,select,textarea{font-size:16px}}
 /* ---- Página pública (componentes en components/landing) ---- */
 html{scroll-behavior:smooth}
 /* El verde es el de la tarjeta de De la Casa (negocio interno); el amarillo resalta y el carbón da contraste. */
@@ -560,3 +564,10 @@ html{scroll-behavior:smooth}
 .enlace span{display:flex;flex-direction:column;gap:2px;min-width:0;overflow-wrap:anywhere}
 .enlace small{color:var(--muted);font-size:13px}
 .enlace::after{content:"→";color:var(--marca,var(--ink));font-weight:700;flex:none}
+/* WhatsApp: su verde (un poco más oscuro que el del logo, para que la letra blanca se lea bien) */
+.enlace.wa{background:#1da851;border-color:#1da851;color:#fff}
+.enlace.wa:hover{background:#178f45;border-color:#178f45}
+.enlace.wa svg{flex:none}
+.enlace.wa span{flex:1}
+.enlace.wa small{color:#fff;opacity:.9}
+.enlace.wa::after{color:#fff}

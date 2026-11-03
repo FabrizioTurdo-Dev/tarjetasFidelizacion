@@ -7,7 +7,7 @@ const ERRORES: Record<string, string> = {
   negocio_no_disponible: "Este negocio no está disponible por ahora.",
   falta_contacto: "Pasanos un teléfono o un mail.",
   ya_registrado: "Ese teléfono o mail ya tiene una tarjeta en este negocio.",
-  demasiadas_altas: "Hubo muchas altas seguidas. Esperá un rato y probá de nuevo.",
+  demasiadas_altas: "Se anotaron muchas personas seguidas y hay que esperar un ratito.",
   tarjeta_invalida: "No encontramos esa tarjeta.",
   sin_permiso: "No tenés permiso para hacer esto.",
   negocio_inactivo: "La cuenta del negocio no está activa.",

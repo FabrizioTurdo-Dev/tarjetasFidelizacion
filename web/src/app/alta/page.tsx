@@ -1,11 +1,30 @@
 "use client";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { sb } from "@/lib/supabase";
 import { BASE, iniciales, marca, msg } from "@/lib/util";
-import { Firma } from "@/components/Firma";
+import { Firma, linkWhatsapp } from "@/components/Firma";
 
 type Pub = { nombre: string; color: string; operativo: boolean };
+
+/** Límite de altas (migración 0009): cuenta regresiva hasta poder anotarse y WhatsApp de Fabri por si no puede esperar. */
+function Espera({ hasta, negocio, onFin }: { hasta: number | null; negocio: string; onFin: () => void }) {
+  const [ahora, setAhora] = useState(Date.now());
+  useEffect(() => {
+    if (!hasta) return;
+    const t = setInterval(() => setAhora(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, [hasta]);
+  const faltan = hasta ? Math.max(0, Math.ceil((hasta - ahora) / 1000)) : null;
+  useEffect(() => { if (faltan === 0) onFin(); }, [faltan, onFin]);
+  const reloj = faltan === null ? "" : `${Math.floor(faltan / 60)}:${String(faltan % 60).padStart(2, "0")}`;
+  return (
+    <>
+      {faltan !== null && <p className="small" style={{ margin: "6px 0 0" }}>Vas a poder anotarte en <b className="mono">{reloj}</b>.</p>}
+      <p className="small" style={{ margin: "6px 0 0" }}>¿No podés esperar? <a href={linkWhatsapp(`¡Hola! Quiero anotarme en la tarjeta de ${negocio} y me pide que espere.`)} target="_blank" rel="noopener noreferrer">Escribinos por WhatsApp</a> y lo resolvemos.</p>
+    </>
+  );
+}
 
 function Alta() {
   const slug = useSearchParams().get("n") || "";
@@ -17,6 +36,8 @@ function Alta() {
   const [acepta, setAcepta] = useState(false);
   const [err, setErr] = useState("");
   const [ocupado, setOcupado] = useState(false);
+  const [espera, setEspera] = useState<{ hasta: number | null } | null>(null);
+  const finEspera = useCallback(() => { setEspera(null); setErr(""); }, []);
 
   useEffect(() => {
     if (!slug) return;
@@ -25,7 +46,7 @@ function Alta() {
 
   async function enviar(e: React.FormEvent) {
     e.preventDefault();
-    setErr(""); setOcupado(true);
+    setErr(""); setEspera(null); setOcupado(true);
     const c = contacto.trim();
     const esMail = c.includes("@");
     const { data, error } = await sb.rpc("alta_cliente", {
@@ -33,7 +54,13 @@ function Alta() {
       p_cumple: cumple || null, p_acepta: acepta,
     });
     setOcupado(false);
-    if (error) { setErr(msg(error)); return; }
+    if (error) {
+      if (error.message.includes("demasiadas_altas")) {
+        const seg = Number(error.details);
+        setEspera({ hasta: seg > 0 ? Date.now() + seg * 1000 : null });
+      }
+      setErr(msg(error)); return;
+    }
     router.push(`/t/?k=${data}&nueva=1`);
   }
 
@@ -52,8 +79,8 @@ function Alta() {
         <label>Cumpleaños (opcional)<input type="date" value={cumple} onChange={(e) => setCumple(e.target.value)} /></label>
         <label className="check"><input type="checkbox" checked={acepta} onChange={(e) => setAcepta(e.target.checked)} />
           <span>Acepto que {neg?.nombre || "el negocio"} guarde mis datos para manejar mi tarjeta y avisarme de premios. Puedo pedir que los borren cuando quiera. <a href={`${BASE}/privacidad/`} target="_blank" rel="noopener">Leer la política de privacidad</a>.</span></label>
-        {err && <div className="errmsg">{err}</div>}
-        <button className="btn" disabled={ocupado || !acepta}>Crear mi tarjeta</button>
+        {err && <div className="errmsg">{err}{espera && <Espera hasta={espera.hasta} negocio={neg?.nombre || slug} onFin={finEspera} />}</div>}
+        <button className="btn" disabled={ocupado || !acepta || !!espera?.hasta}>Crear mi tarjeta</button>
       </form>
       <Firma />
     </main>

@@ -8,6 +8,10 @@
 [build.environment]
   NODE_VERSION = "22"
   NEXT_PUBLIC_BASE_PATH = ""
+  # Medición (no son secretos). Google Tag Manager: GA4 y Google Ads se configuran adentro del contenedor.
+  NEXT_PUBLIC_GTM_ID = "GTM-N54LWTSP"
+  # GA4 directo (G-XXXXXXXXXX): dejar vacío mientras se use Tag Manager, si no se cuentan doble las visitas.
+  NEXT_PUBLIC_GA_ID = ""
   # Export estático: no hace falta el adaptador de Next.js de Netlify.
   NETLIFY_NEXT_PLUGIN_SKIP = "true"
 

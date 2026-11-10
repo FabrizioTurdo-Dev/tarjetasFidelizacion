@@ -16,7 +16,7 @@ export default function Privacidad() {
   return (
     <main className="screen" style={{ gap: 14 }}>
       <h1>Política de privacidad</h1>
-      <p className="muted small">Última actualización: 20/10/2026</p>
+      <p className="muted small">Última actualización: 10/11/2026</p>
 
       <h2>Quiénes somos</h2>
       <p>De la Casa es una plataforma de tarjetas de fidelización digitales que presta el servicio a comercios de Argentina. Cada comercio decide para qué usa los datos de sus clientes. De la Casa los guarda y procesa por cuenta del comercio. Responsable de la plataforma: Fabrizio Marcelo Turdó, CUIT 20-42229376-1, domicilio: Ingeniero Maschwitz, partido de Escobar, provincia de Buenos Aires, contacto: devfabri@gmail.com.</p>
@@ -44,6 +44,9 @@ export default function Privacidad() {
 
       <h2>Si pediste la prueba para tu negocio</h2>
       <p>Guardamos el nombre del negocio, el rubro, la ciudad, tu nombre, tu WhatsApp y, si lo dejaste, tu mail, solo para contactarte por la prueba y darte soporte. Los ve únicamente el equipo de la plataforma. Si no seguís, podés pedir que los borremos escribiendo a devfabri@gmail.com.</p>
+
+      <h2>Estadísticas de la página pública</h2>
+      <p>En la página principal, la guía y esta política usamos Google Analytics para saber cuánta gente las visita, desde dónde llega y qué partes lee. Son datos agregados: no sabemos quién sos. No se mide nada en las tarjetas, en las altas ni en los paneles de los comercios.</p>
 
       <h2>Tu tarjeta es privada</h2>
       <p>Tu tarjeta se abre con un link secreto. Quien tenga el link puede ver tus visitas, así que no lo compartas. Si lo perdés, pedile al comercio que te lo reenvíe.</p>

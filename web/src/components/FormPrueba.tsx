@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { evento, origenDelLink } from "@/lib/analytics";
 import { sb } from "@/lib/supabase";
 import { BASE, msg } from "@/lib/util";
 
@@ -10,6 +11,11 @@ export function FormPrueba() {
   const [err, setErr] = useState("");
   const [ocupado, setOcupado] = useState(false);
   const [listo, setListo] = useState(false);
+  // Si llegó desde un anuncio (utm_source o gclid), "¿Cómo nos conociste?" arranca con ese dato; igual lo puede cambiar.
+  useEffect(() => {
+    const origen = origenDelLink(window.location.search);
+    if (origen) setF((f) => (f.como ? f : { ...f, como: origen }));
+  }, []);
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setF({ ...f, [k]: e.target.value });
 
   async function enviar(e: React.FormEvent) {
@@ -21,6 +27,7 @@ export function FormPrueba() {
     });
     setOcupado(false);
     if (error) { setErr(msg(error)); return; }
+    evento("pedir_prueba", { rubro: f.rubro.trim().toLowerCase() || "sin rubro" }); // conversión principal de Google Ads
     setListo(true);
   }
 

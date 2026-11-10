@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { CUPO_FUNDADORES as CUPO, PRECIO, PRECIO_FUNDADOR } from "@/lib/precios";
-import { sb } from "@/lib/supabase";
+import { rpcPublica } from "@/lib/rpc";
 
 // Socios fundadores: los primeros 10 negocios que llegan por el formulario de la página y Fabri habilita.
 // La base cuenta los lugares (lugares_fundadores, migración 0007). Mientras no llega el número se muestra
@@ -10,7 +10,7 @@ import { sb } from "@/lib/supabase";
 // Una sola consulta para todos los componentes de la página.
 let pedido: Promise<number | null> | null = null;
 function consultar() {
-  pedido ??= Promise.resolve(sb.rpc("lugares_fundadores")).then(({ data, error }) => (error || typeof data !== "number" ? null : data), () => null);
+  pedido ??= rpcPublica("lugares_fundadores").then(({ data, error }) => (error || typeof data !== "number" ? null : data), () => null);
   return pedido;
 }
 

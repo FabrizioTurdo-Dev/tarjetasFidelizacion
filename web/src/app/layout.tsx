@@ -1,10 +1,17 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { Instrument_Serif, Inter_Tight, IBM_Plex_Mono } from "next/font/google";
 import { Analytics } from "@/components/Analytics";
 
 import { OG, SITIO } from "@/lib/seo";
 
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
+// Letras servidas desde el propio sitio (next/font las descarga al compilar): sin pedirle nada a Google Fonts,
+// que bloqueaba el primer dibujo de la página. Cada una deja su variable CSS, que usa globals.css.
+const display = Instrument_Serif({ subsets: ["latin"], weight: "400", style: ["normal", "italic"], variable: "--f-display", display: "swap" });
+const body = Inter_Tight({ subsets: ["latin"], variable: "--f-body", display: "swap" });
+const data = IBM_Plex_Mono({ subsets: ["latin"], weight: "500", variable: "--f-data", display: "swap", preload: false });
 
 // Cada sección elige su manifiesto (ícono de la pantalla de inicio) en su propio layout:
 // negocio (panel, escanear, guía), admin, y el de clientes, que se agrega desde el navegador (ver ManifestCliente).
@@ -27,10 +34,7 @@ export const viewport: Viewport = { width: "device-width", initialScale: 1, them
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     // suppressHydrationWarning: la página pública le agrega una clase a <html> antes de que cargue React (ver app/page.tsx).
-    <html lang="es" suppressHydrationWarning>
-      <head>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" />
-      </head>
+    <html lang="es" className={`${display.variable} ${body.variable} ${data.variable}`} suppressHydrationWarning>
       <body>{children}<Analytics /></body>
     </html>
   );

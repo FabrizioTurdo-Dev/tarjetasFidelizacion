@@ -3,7 +3,7 @@
   --marca:#7a3e2b; --marca-ink:#fff7f2; --marca-soft:#f4e7e1;
   --bg:#f2f1ef; --surface:#fff; --ink:#1c1a19; --muted:#6b6560; --line:#e0dcd8;
   --good:#1f7a3f; --good-soft:#e2f2e7; --warn:#a15c00; --warn-soft:#fbefd9; --bad:#b3261e; --bad-soft:#fbe4e2;
-  --display:"Instrument Serif",Georgia,serif; --body:"Inter Tight",system-ui,sans-serif; --data:"IBM Plex Mono",ui-monospace,monospace;
+  --display:var(--f-display),Georgia,serif; --body:var(--f-body),system-ui,sans-serif; --data:var(--f-data),ui-monospace,monospace;
 }
 /* Instrument Serif tiene un solo peso: que el navegador no le invente la negrita. */
 html{font-synthesis-weight:none}
@@ -178,6 +178,9 @@ html{scroll-behavior:smooth}
 .rv-on .rv.in{opacity:1;transform:none}
 .l-entra{animation:l-entra .9s calc(var(--d,0) * .12s + .05s) cubic-bezier(.2,.8,.2,1) both}
 @keyframes l-entra{from{opacity:0;transform:translateY(22px)}}
+/* El título y la bajada de la portada entran sin esconderse: si arrancan invisibles, Google mide tarde la carga (LCP). */
+.l-hero h1.l-entra,.l-hero .l-lead.l-entra{animation-name:l-entra-txt}
+@keyframes l-entra-txt{from{transform:translateY(22px)}}
 /* Encabezado */
 /* Sin backdrop-filter: el desenfoque de un encabezado fijo se recalcula en cada cuadro del scroll y lo traba en Chrome. */
 .l-head{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--bg) 96%,transparent);border-bottom:1px solid transparent;transition:border-color .3s}

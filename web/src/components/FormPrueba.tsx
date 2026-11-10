@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { evento, origenDelLink } from "@/lib/analytics";
-import { sb } from "@/lib/supabase";
+import { rpcPublica } from "@/lib/rpc";
 import { BASE, msg } from "@/lib/util";
 
 // Formulario "Quiero probarlo" de la página principal (pedir_prueba). Fabri contacta a cada uno por WhatsApp.
@@ -21,7 +21,7 @@ export function FormPrueba() {
   async function enviar(e: React.FormEvent) {
     e.preventDefault();
     setErr(""); setOcupado(true);
-    const { error } = await sb.rpc("pedir_prueba", {
+    const { error } = await rpcPublica("pedir_prueba", {
       p_negocio: f.negocio, p_rubro: f.rubro, p_ciudad: f.ciudad, p_pais: f.pais, p_nombre: f.nombre,
       p_whatsapp: f.whatsapp, p_email: f.email, p_como: f.como, p_acepta: acepta, p_web: f.web,
     });

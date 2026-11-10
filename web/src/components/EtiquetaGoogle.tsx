@@ -7,6 +7,7 @@ export function EtiquetaGoogle() {
   if (!GTM) return null;
   return (
     <>
+      <link rel="preconnect" href="https://www.googletagmanager.com" />
       <script async src={`https://www.googletagmanager.com/gtm.js?id=${GTM}`} />
       <script
         dangerouslySetInnerHTML={{

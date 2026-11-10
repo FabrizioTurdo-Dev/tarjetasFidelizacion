@@ -1,3 +1,4 @@
+import { EtiquetaGoogle } from "@/components/EtiquetaGoogle";
 import Link from "next/link";
 import { Firma, linkWhatsapp } from "@/components/Firma";
 import { og } from "@/lib/seo";
@@ -15,6 +16,7 @@ export const metadata = {
 export default function Guia() {
   return (
     <main className="screen guia">
+      <EtiquetaGoogle />
       <div className="links noprint"><Link href="/panel/">← Volver al panel</Link></div>
       <div>
         <h1>Cómo se usa De la Casa</h1>

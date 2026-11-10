@@ -1,5 +1,6 @@
 // Domicilio provisorio (solo la localidad): cambiarlo por una casilla de correo u oficina virtual al empezar a cobrar.
 // Conviene que la revise un abogado.
+import { EtiquetaGoogle } from "@/components/EtiquetaGoogle";
 import { Firma } from "@/components/Firma";
 import { og } from "@/lib/seo";
 
@@ -15,6 +16,7 @@ export const metadata = {
 export default function Privacidad() {
   return (
     <main className="screen" style={{ gap: 14 }}>
+      <EtiquetaGoogle />
       <h1>Política de privacidad</h1>
       <p className="muted small">Última actualización: 10/11/2026</p>
 

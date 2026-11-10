@@ -1,3 +1,4 @@
+import { EtiquetaGoogle } from "@/components/EtiquetaGoogle";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Firma, linkWhatsapp } from "@/components/Firma";
@@ -117,6 +118,7 @@ const INCLUYE = [
 export default function Inicio() {
   return (
     <main className="lp">
+      <EtiquetaGoogle />
       {/* Con JavaScript, los bloques .rv arrancan escondidos y aparecen al bajar (ver Efectos). */}
       <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('rv-on')" }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(LD).replace(/</g, "\\u003c") }} />

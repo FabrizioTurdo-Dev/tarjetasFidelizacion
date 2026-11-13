@@ -172,7 +172,7 @@ html{scroll-behavior:smooth}
 .l-btn-luz{background:var(--osc-ink);color:var(--osc)}
 .l-btn-amb{background:var(--amb);color:var(--amb-ink)}
 .l-btn-chico{padding:9px 16px;font-size:14px}
-.l-sec-osc :focus-visible,.l-final :focus-visible,.l-fund :focus-visible,.l-pildora :focus-visible{outline-color:var(--amb)}
+.l-sec-osc :focus-visible,.l-final :focus-visible,.l-fund :focus-visible,.l-barra :focus-visible{outline-color:var(--amb)}
 /* Aparecer al bajar (ver Efectos.tsx) y entrada de la portada */
 .rv-on .rv{opacity:0;transform:translateY(28px);transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1);transition-delay:calc(var(--d,0) * 90ms)}
 .rv-on .rv.in{opacity:1;transform:none}
@@ -494,55 +494,107 @@ html{scroll-behavior:smooth}
 .l-pie a:not(.l-logo){color:var(--muted);text-decoration:none;font-size:14.5px}
 .l-pie a:not(.l-logo):hover{color:var(--ink)}
 .l-pie .firma{margin-top:44px}
-/* Aviso flotante de socios fundadores */
-.l-pildora{position:fixed;left:0;right:0;margin:0 auto;width:fit-content;bottom:max(16px,env(safe-area-inset-bottom));z-index:40;display:flex;align-items:center;gap:2px;max-width:calc(100vw - 32px);background:var(--osc);color:var(--osc-ink);border-radius:999px;padding:6px;box-shadow:0 22px 44px -16px rgba(0,0,0,.55);opacity:0;transform:translateY(24px);pointer-events:none;transition:opacity .35s,transform .5s cubic-bezier(.2,.9,.3,1.25)}
-.l-pildora.on{opacity:1;transform:none;pointer-events:auto}
-.l-pildora a{display:flex;align-items:center;gap:12px;min-width:0;color:inherit;text-decoration:none;padding-right:6px}
-.l-pildora a>b{flex:none;background:var(--amb);color:var(--amb-ink);font:400 19px/1 var(--display);border-radius:999px;padding:8px 12px}
-.l-pildora a>span{display:flex;flex-direction:column;line-height:1.25;min-width:0}
-.l-pildora strong{font-size:14px}
-.l-pildora small{font-size:12.5px;color:var(--osc-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.l-pildora button{flex:none;width:34px;height:34px;border-radius:50%;border:0;background:none;color:var(--osc-muted);font-size:20px;line-height:1;cursor:pointer}
-.l-pildora button:hover{background:#3a2f2a;color:#fff}
+/* Barra flotante de abajo (Fundadores.tsx): aviso de socios fundadores y, en el celular, el botón "Probalo gratis" */
+.l-barra{position:fixed;left:0;right:0;margin:0 auto;width:fit-content;bottom:max(16px,env(safe-area-inset-bottom));z-index:40;display:flex;align-items:center;gap:2px;max-width:calc(100vw - 32px);background:var(--osc);color:var(--osc-ink);border-radius:999px;padding:6px;box-shadow:0 22px 44px -16px rgba(0,0,0,.55);opacity:0;transform:translateY(24px);pointer-events:none;transition:opacity .35s,transform .5s cubic-bezier(.2,.9,.3,1.25)}
+.l-barra.on{opacity:1;transform:none;pointer-events:auto}
+.l-barra-aviso{display:flex;align-items:center;gap:12px;min-width:0;color:inherit;text-decoration:none;padding-right:6px}
+.l-barra-aviso>b{flex:none;background:var(--amb);color:var(--amb-ink);font:400 19px/1 var(--display);border-radius:999px;padding:8px 12px}
+.l-barra-aviso>span{display:flex;flex-direction:column;line-height:1.25;min-width:0}
+.l-barra strong{font-size:14px}
+.l-barra small{font-size:12.5px;color:var(--osc-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.l-barra button{flex:none;width:34px;height:34px;border-radius:50%;border:0;background:none;color:var(--osc-muted);font-size:20px;line-height:1;cursor:pointer}
+.l-barra button:hover{background:#3a2f2a;color:#fff}
+/* Formulario: lo opcional, plegado */
+.l-mas summary{list-style:none;cursor:pointer;font-size:14px;font-weight:500;color:var(--muted);display:flex;align-items:center;gap:8px}
+.l-mas summary::-webkit-details-marker{display:none}
+.l-mas summary::before{content:"+";display:grid;place-items:center;width:22px;height:22px;border-radius:50%;border:1px solid var(--line);font-size:15px;line-height:1}
+.l-mas[open] summary::before{content:"−"}
+.l-mas[open] summary{margin-bottom:12px}
+.l-mas label+label{margin-top:12px}
 /* Tamaños */
 @media (min-width:901px){.l-faq>div:first-child,.l-final-in>div:first-child{position:sticky;top:100px}}
 @media (max-width:980px){
   .l-func{grid-template-columns:repeat(2,1fr)}
   .l-rubros{grid-template-columns:repeat(2,1fr)}
 }
+@media (min-width:601px){.l-solo-angosto{display:none!important}}
 @media (max-width:900px){
   .l-nav,.l-solo-ancho{display:none}
-  .l-hero{padding:28px 0 64px}
+  /* En el celular la página tiene que ser corta: menos aire entre secciones y los pasos y los rubros se deslizan de costado. */
+  .l-sec{padding:56px 0}
+  .l-sec-cab{margin-bottom:28px}
+  .l-hero{padding:24px 0 56px}
   .l-hero-in,.l-vs,.l-panel-sec,.l-faq,.l-final-in{grid-template-columns:minmax(0,1fr)}
-  .l-hero-in{gap:44px}
+  .l-hero-in{gap:36px}
   .l-hero::before{right:auto;left:50%;top:auto;bottom:-14%;translate:-50% 0}
   .l-hero::after{-webkit-mask-image:radial-gradient(ellipse 80% 45% at 50% 78%,#000,transparent 75%);mask-image:radial-gradient(ellipse 80% 45% at 50% 78%,#000,transparent 75%)}
-  .l-vs-vis{order:2;height:340px}
-  .l-pasos{grid-template-columns:minmax(0,1fr);max-width:520px}
+  .l-vs-vis{order:2;height:320px}
+  .l-vs-tabla{margin-top:24px}
+  .l-desliza{display:flex;gap:14px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;margin:0 -24px;padding:4px 24px 12px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .l-desliza::-webkit-scrollbar{display:none}
+  .l-desliza>*{flex:0 0 min(82vw,360px);scroll-snap-align:start}
+  .l-desliza>.rv{transform:translateY(0)}
+  .l-pasos{display:flex;gap:14px}
+  .l-paso-vis{height:200px}
   .l-demo{grid-template-columns:minmax(0,440px);gap:18px}
   .l-flecha{justify-self:center;rotate:90deg;width:48px;margin:12px 0}
+  .l-demo-pie{margin-top:24px}
+  .l-lista{margin-top:20px;gap:10px}
   .l-precios{grid-template-columns:minmax(0,1fr);max-width:520px}
+  .l-final{padding:56px 0}
+  .l-final-wa{margin-top:20px}
+  .l-checks-col{margin-top:20px;gap:8px;font-size:15.5px}
+  .l-pie{padding:40px 0 24px}
 }
 @media (max-width:600px){
   .l-wrap{padding:0 16px}
+  .l-head-in{height:58px}
   .l-head-acc{gap:12px}
   .l-ctas .l-btn{flex:1 1 100%}
-  .l-tel{font-size:13.5px}
+  .l-tel{font-size:12.5px}
+  .l-cam{aspect-ratio:2/1}
   .l-flota{display:none}
   .l-aviso{left:0;right:0;margin:0 auto;top:-6px;min-width:0;width:max-content;max-width:94%;transform:translateY(-10px) scale(.96)}
   .l-aviso.on{transform:none}
   .l-vs-cab{display:none}
-  .l-vs-fila{grid-template-columns:minmax(0,1fr);gap:6px}
+  .l-vs-fila{grid-template-columns:minmax(0,1fr);gap:6px;padding:12px 0}
   .l-vs-fila span:first-child{font-size:14px}
   .l-carton{width:270px;height:167px}
   .l-vs-digital{width:262px}
-  .l-func,.l-rubros,.l-panel-2{grid-template-columns:minmax(0,1fr)}
+  .l-desliza{margin:0 -16px;padding:4px 16px 12px}
+  /* Funciones: lista compacta con el ícono al costado, en vez de una tarjeta grande por función. */
+  .l-func{grid-template-columns:minmax(0,1fr);border:0}
+  .l-func-i{display:grid;grid-template-columns:40px minmax(0,1fr);column-gap:14px;row-gap:3px;padding:14px 0;border:0;border-bottom:1px solid var(--line);background:none}
+  .l-func-ico{grid-row:1/3;width:40px;height:40px;border-radius:11px;margin:0}
+  .l-func-ico svg{width:21px;height:21px}
+  .l-func-i h3{font-size:19px}
+  .l-func-i p{font-size:14px}
+  .l-rubros{display:flex;gap:12px}
+  .l-rubros>*{flex-basis:min(76vw,300px)}
+  .l-rubro{padding:16px 18px}
+  .l-rubro h3{font-size:22px;margin-bottom:4px}
+  .l-panel-2{grid-template-columns:1fr 1fr;gap:8px}
+  .l-panel-box{padding:10px 12px}
+  .l-panel-box>b{font-size:16px}
+  .l-panel-fila{font-size:12px;gap:6px}
   .l-panel-kpis{grid-template-columns:repeat(2,1fr)}
-  .l-panel-cuerpo{padding:12px}
-  .l-plan{padding:26px 22px}
-  .l-fund-tag{top:22px;right:20px}
-  .l-pie-in{grid-template-columns:minmax(0,1fr)}
-  .l-faq-l details p{padding-right:0}
+  .l-panel-cuerpo{padding:12px;gap:10px}
+  .l-panel-graf{height:64px}
+  .l-plan{padding:24px 20px;gap:8px}
+  .l-incluye{margin:8px 0 18px;padding-top:16px;gap:9px}
+  .l-fund-tag{top:20px;right:18px}
+  .l-faq-l summary{padding:15px 0;font-size:20px}
+  .l-faq-l details p{padding-right:0;padding-bottom:16px}
+  .l-pie-in{grid-template-columns:minmax(0,1fr);gap:20px}
+  .l-pie{padding-bottom:92px}
+  /* La barra de abajo pasa a ocupar el ancho, con el botón "Probalo gratis" a la derecha. */
+  .l-barra{left:12px;right:12px;width:auto;max-width:none;border-radius:20px;padding:8px 8px 8px 14px;gap:10px;bottom:max(12px,env(safe-area-inset-bottom))}
+  .l-barra-aviso{flex:1;gap:10px;padding-right:0}
+  .l-barra-aviso>b{display:none}
+  .l-barra strong{font-size:13.5px}
+  .l-barra small{font-size:12px}
+  .l-barra button{display:none}
+  .l-barra .l-btn{flex:none}
 }
 @media (max-width:380px){
   .l-logo{font-size:18px}

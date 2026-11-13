@@ -42,11 +42,15 @@ export function FormPrueba() {
         <label>Rubro<input maxLength={60} value={f.rubro} onChange={set("rubro")} placeholder="Cafetería, peluquería…" /></label>
         <label>Ciudad<input maxLength={80} value={f.ciudad} onChange={set("ciudad")} placeholder="Escobar" /></label>
       </div>
-      <label>País<input maxLength={60} value={f.pais} onChange={set("pais")} /></label>
       <label>Tu nombre<input required maxLength={80} autoComplete="name" value={f.nombre} onChange={set("nombre")} /></label>
       <label>WhatsApp<input required maxLength={30} inputMode="tel" autoComplete="tel" value={f.whatsapp} onChange={set("whatsapp")} placeholder="11 2345 6789" /></label>
-      <label>Mail (opcional)<input type="email" maxLength={120} autoComplete="email" value={f.email} onChange={set("email")} /></label>
-      <label>¿Cómo nos conociste? (opcional)<input maxLength={200} value={f.como} onChange={set("como")} placeholder="Vi la tarjeta en otro local, Instagram…" /></label>
+      {/* Lo opcional va plegado: el formulario corto se completa más (si llegó de un anuncio, "cómo nos conociste" ya viene cargado). */}
+      <details className="l-mas">
+        <summary>Más datos (opcional)</summary>
+        <label>País<input maxLength={60} value={f.pais} onChange={set("pais")} /></label>
+        <label>Mail<input type="email" maxLength={120} autoComplete="email" value={f.email} onChange={set("email")} /></label>
+        <label>¿Cómo nos conociste?<input maxLength={200} value={f.como} onChange={set("como")} placeholder="Vi la tarjeta en otro local, Instagram…" /></label>
+      </details>
       {/* Campo trampa para bots: las personas no lo ven. */}
       <input className="trampa" tabIndex={-1} autoComplete="off" aria-hidden="true" value={f.web} onChange={set("web")} name="web" />
       <label className="check"><input type="checkbox" checked={acepta} onChange={(e) => setAcepta(e.target.checked)} />

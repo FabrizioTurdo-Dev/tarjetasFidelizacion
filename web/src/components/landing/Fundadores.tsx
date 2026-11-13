@@ -63,14 +63,17 @@ export function PlanFundador() {
 
 const CLAVE = "dlc_fundadores_cerrado";
 
-/** Aviso flotante: aparece después de la portada y se esconde en la demo, en precios y en el formulario. */
+/** Barra flotante de abajo. En el celular lleva el botón "Probalo gratis" (el del encabezado queda lejos cuando
+ *  la página es larga) y, mientras queden lugares, el aviso de socios fundadores. En pantallas anchas es solo
+ *  el aviso, porque el botón ya está en el encabezado fijo. Aparece después de la portada y se esconde en la demo,
+ *  en precios y en el formulario. */
 export function PildoraFundadores() {
   const lugares = useLugares();
   const [ver, setVer] = useState(false);
   const [cerrada, setCerrada] = useState(false);
 
   useEffect(() => {
-    try { if (sessionStorage.getItem(CLAVE)) { setCerrada(true); return; } } catch { /* sin almacenamiento: se muestra igual */ }
+    try { if (sessionStorage.getItem(CLAVE)) setCerrada(true); } catch { /* sin almacenamiento: se muestra igual */ }
     const tapan = new Set<Element>();
     const io = new IntersectionObserver((es) => {
       es.forEach((e) => (e.isIntersecting ? tapan.add(e.target) : tapan.delete(e.target)));
@@ -85,15 +88,20 @@ export function PildoraFundadores() {
     try { sessionStorage.setItem(CLAVE, "1"); } catch { /* nada */ }
   }
 
-  if (cerrada || lugares === 0) return null;
+  const aviso = lugares !== 0 && !cerrada;
   return (
-    <div className={"l-pildora" + (ver ? " on" : "")} inert={!ver}>
-      <a href="#precios">
-        <b>50%</b>
-        <span><strong>Socios fundadores</strong>
-          <small>{lugares !== null && `${quedan(lugares)} · `}{PRECIO_FUNDADOR} por mes<span className="l-solo-ancho"> durante 6 meses</span></small></span>
-      </a>
-      <button onClick={cerrar} aria-label="Cerrar aviso de socios fundadores">×</button>
+    <div className={"l-barra" + (ver ? " on" : "") + (aviso ? "" : " l-solo-angosto")} inert={!ver}>
+      {aviso ? (
+        <a href="#precios" className="l-barra-aviso">
+          <b>50%</b>
+          <span><strong>Socios fundadores</strong>
+            <small>{lugares !== null && `${quedan(lugares)} · `}{PRECIO_FUNDADOR} por mes<span className="l-solo-ancho"> durante 6 meses</span></small></span>
+        </a>
+      ) : (
+        <span className="l-barra-aviso"><span><strong>30 días gratis</strong><small>Sin tarjeta de crédito</small></span></span>
+      )}
+      <a href="#probar" className="l-btn l-btn-amb l-btn-chico l-solo-angosto">Probalo gratis</a>
+      {aviso && <button onClick={cerrar} aria-label="Cerrar aviso de socios fundadores">×</button>}
     </div>
   );
 }

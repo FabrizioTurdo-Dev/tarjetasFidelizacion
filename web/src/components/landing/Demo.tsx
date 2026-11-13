@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Qr } from "@/components/Qr";
+import { evento } from "@/lib/analytics";
 import { PREMIOS_DEMO, PremiosCelu, TarjetaCelu, Telefono } from "./Tarjeta";
 
 // Demo para tocar: el escáner del negocio a la izquierda y la tarjeta de Lucía a la derecha.
@@ -33,6 +34,7 @@ export function Demo() {
 
   function escanear() {
     if (leyendo) return;
+    if (v === INICIO && ultima === null) evento("demo_uso"); // primera vez que toca la demo (medición)
     setLeyendo(true); setRes(null);
     window.setTimeout(() => {
       setLeyendo(false);

@@ -8,6 +8,7 @@ import { Demo } from "@/components/landing/Demo";
 import { Efectos } from "@/components/landing/Efectos";
 import { InsigniaFundadores, PildoraFundadores, PlanFundador } from "@/components/landing/Fundadores";
 import { PanelEjemplo } from "@/components/landing/PanelEjemplo";
+import { Logo } from "@/components/landing/Logo";
 import { Portada } from "@/components/landing/Portada";
 import { Casa } from "@/components/landing/Tarjeta";
 import { CUPO_FUNDADORES, PRECIO, PRECIO_FUNDADOR } from "@/lib/precios";
@@ -126,7 +127,7 @@ export default function Inicio() {
 
       <header className="l-head">
         <div className="l-wrap l-head-in">
-          <Link href="/" className="l-logo"><Casa /> De la Casa</Link>
+          <Logo />
           <nav className="l-nav" aria-label="Secciones">
             <a href="#como">Cómo funciona</a><a href="#demo">Probala</a><a href="#precios">Precios</a><a href="#preguntas">Preguntas</a>
           </nav>
@@ -197,7 +198,7 @@ export default function Inicio() {
             <h2 className="rv">Tres pasos. Ninguna app.</h2>
             <p className="l-lead rv">Funciona con el celular que tu cliente ya tiene en la mano y con el tuyo.</p>
           </div>
-          <ol className="l-pasos">
+          <ol className="l-pasos l-desliza">
             <li className="rv" style={{ ["--d" as string]: 0 }}>
               <div className="l-paso-vis l-pv-qr" aria-hidden>
                 <div className="l-pv-cartel"><small>De la Casa</small><b>Sumá visitas y ganá premios</b>
@@ -285,7 +286,7 @@ export default function Inicio() {
             <h2 className="rv">Vos elegís los premios.</h2>
             <p className="l-lead rv">Armás una escalera y la cambiás cuando quieras. Canjear no descuenta visitas: tu cliente sigue sumando para el próximo premio.</p>
           </div>
-          <div className="l-rubros">
+          <div className="l-rubros l-desliza">
             {ESCALERAS.map(([r, esc], i) => (
               <div className="l-rubro rv" key={r} style={{ ["--d" as string]: i % 4 }}>
                 <h3>{r}</h3>
@@ -352,7 +353,7 @@ export default function Inicio() {
       <footer className="l-pie">
         <div className="l-wrap l-pie-in">
           <div>
-            <Link href="/" className="l-logo"><Casa /> De la Casa</Link>
+            <Logo />
             <p>Tarjeta de cliente frecuente para comercios y servicios de Argentina. Hecho desde Ingeniero Maschwitz, Buenos Aires.</p>
           </div>
           <nav aria-label="Enlaces">

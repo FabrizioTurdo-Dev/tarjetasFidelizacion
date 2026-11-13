@@ -9,7 +9,7 @@ import { evento } from "@/lib/analytics";
 //  - clic_probar {donde}: tocó un botón "Probalo gratis" (lleva al formulario). donde = encabezado, portada, precios, fundador, barra.
 //  - clic_demo {donde}: tocó "Probá la demo".
 //  - ver_seccion {seccion}: llegó bajando a una sección de la portada (como, demo, precios, preguntas, probar). Una vez por visita.
-// En GTM cada evento necesita su activador "Evento personalizado" (ver docs/plan-google-ads.md, sección 6).
+// Salen con gtag (lib/analytics.ts) y llegan a GA4 sin configurar nada en Tag Manager.
 const PUBLICAS = ["/", "/guia", "/privacidad"];
 const SECCIONES = ["como", "demo", "precios", "preguntas", "probar"];
 
